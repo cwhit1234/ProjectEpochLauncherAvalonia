@@ -1,0 +1,143 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="ProjectEpochLauncherAvalonia.MainWindow"
+        Title="Project Epoch Launcher"
+		Icon="/Assets/icon.ico"
+        Width="1200"
+        Height="800">
+
+	<Panel>
+		<!-- Background Image -->
+		<Image Source="/Assets/background.jpg"
+               Stretch="UniformToFill"
+               Opacity="0.8"/>
+
+		<!-- Main Content Grid -->
+		<Grid>
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="250"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Left Navigation Panel -->
+			<Border Grid.Column="0"
+                    Background="#CC1A1A2E"
+                    BorderBrush="#3A3A4E"
+                    BorderThickness="0,0,1,0">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="120"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+
+					<!-- Logo Container -->
+					<Border Grid.Row="0"
+                            Padding="20"
+                            BorderBrush="#3A3A4E"
+                            BorderThickness="0,0,0,1">
+						<Image Source="/Assets/logo.png"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"/>
+					</Border>
+
+					<!-- Navigation Menu -->
+					<StackPanel Grid.Row="1"
+                                Margin="0,20">
+						<!-- Home Button -->
+						<RadioButton x:Name="HomeButton"
+                                     GroupName="Navigation"
+                                     IsChecked="True"
+                                     Classes="nav-button">
+							<StackPanel Orientation="Horizontal" Spacing="15">
+								<PathIcon Data="M 12 3 L 2 12 L 5 12 L 5 20 L 9 20 L 9 14 L 15 14 L 15 20 L 19 20 L 19 12 L 22 12 Z"
+                                          Width="20"
+                                          Height="20"/>
+								<TextBlock Text="Home"
+                                           VerticalAlignment="Center"
+                                           FontSize="16"/>
+							</StackPanel>
+						</RadioButton>
+
+						<!-- Settings Button -->
+						<RadioButton x:Name="SettingsButton"
+                                     GroupName="Navigation"
+                                     Classes="nav-button">
+							<StackPanel Orientation="Horizontal" Spacing="15">
+								<PathIcon Data="M 12 8 A 4 4 0 0 0 8 12 A 4 4 0 0 0 12 16 A 4 4 0 0 0 16 12 A 4 4 0 0 0 12 8 M 12 10 A 2 2 0 0 1 14 12 A 2 2 0 0 1 12 14 A 2 2 0 0 1 10 12 A 2 2 0 0 1 12 10 M 10.73 3 L 13.27 3 L 13.72 5.56 Q 14.59 5.89 15.38 6.42 L 17.81 5.44 L 19.08 7.56 L 17.15 9.19 Q 17.25 9.77 17.25 10.35 Q 17.25 10.92 17.15 11.5 L 19.08 13.13 L 17.81 15.25 L 15.38 14.27 Q 14.59 14.8 13.72 15.13 L 13.27 17.69 L 10.73 17.69 L 10.28 15.13 Q 9.41 14.8 8.62 14.27 L 6.19 15.25 L 4.92 13.13 L 6.85 11.5 Q 6.75 10.92 6.75 10.35 Q 6.75 9.77 6.85 9.19 L 4.92 7.56 L 6.19 5.44 L 8.62 6.42 Q 9.41 5.89 10.28 5.56 Z"
+                                          Width="20"
+                                          Height="20"/>
+								<TextBlock Text="Settings"
+                                           VerticalAlignment="Center"
+                                           FontSize="16"/>
+							</StackPanel>
+						</RadioButton>
+					</StackPanel>
+				</Grid>
+			</Border>
+
+			<!-- Content Area -->
+			<Border Grid.Column="1"
+                    Background="#CC16213E"
+                    Margin="20"
+                    CornerRadius="10"
+                    Padding="30">
+				<TransitioningContentControl x:Name="ContentArea">
+					<TransitioningContentControl.PageTransition>
+						<CrossFade Duration="0:00:00.3"/>
+					</TransitioningContentControl.PageTransition>
+
+					<!-- Default Home Content -->
+					<Grid>
+						<TextBlock Text="Welcome to Project Epoch"
+                                   FontSize="32"
+                                   FontWeight="Bold"
+                                   Foreground="#F0E68C"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+					</Grid>
+				</TransitioningContentControl>
+			</Border>
+		</Grid>
+	</Panel>
+
+	<Window.Styles>
+		<!-- Navigation Button Style -->
+		<Style Selector="RadioButton.nav-button">
+			<Setter Property="Background" Value="Transparent"/>
+			<Setter Property="Foreground" Value="#B0B0C0"/>
+			<Setter Property="Padding" Value="20,15"/>
+			<Setter Property="Margin" Value="10,2"/>
+			<Setter Property="CornerRadius" Value="8"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<ControlTemplate>
+					<Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}">
+						<ContentPresenter Content="{TemplateBinding Content}"/>
+					</Border>
+				</ControlTemplate>
+			</Setter>
+		</Style>
+
+		<Style Selector="RadioButton.nav-button:pointerover">
+			<Setter Property="Background" Value="#33FFFFFF"/>
+			<Setter Property="Foreground" Value="#F0E68C"/>
+		</Style>
+
+		<Style Selector="RadioButton.nav-button:checked">
+			<Setter Property="Background" Value="#44F0E68C"/>
+			<Setter Property="Foreground" Value="#F0E68C"/>
+		</Style>
+
+		<Style Selector="RadioButton.nav-button PathIcon">
+			<Setter Property="Foreground" Value="{Binding $parent[RadioButton].Foreground}"/>
+		</Style>
+	</Window.Styles>
+</Window>
