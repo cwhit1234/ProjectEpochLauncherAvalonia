@@ -47,10 +47,18 @@ namespace ProjectEpochLauncherAvalonia
             _nextButton = this.FindControl<Button>("NextButton");
 
             if (_backButton != null)
+            {
+                _backButton.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                _backButton.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 _backButton.Click += OnBackClick;
+            }
 
             if (_nextButton != null)
+            {
+                _nextButton.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
+                _nextButton.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center;
                 _nextButton.Click += OnNextClick;
+            }
         }
 
         protected override void OnClosed(EventArgs e)
@@ -433,7 +441,9 @@ namespace ProjectEpochLauncherAvalonia
                 Background = Avalonia.Media.Brush.Parse("#4CAF50"),
                 Foreground = Avalonia.Media.Brushes.White,
                 CornerRadius = new Avalonia.CornerRadius(4),
-                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
             browseButton.PointerEntered += (s, e) => browseButton.Background = Avalonia.Media.Brush.Parse("#45A049");
