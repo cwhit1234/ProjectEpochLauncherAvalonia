@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="ProjectEpochLauncherAvalonia.MainWindow"
-        Title="Project Epoch Launcher"
+        Title="Project Epoch Launcher Avalonia"
 		Icon="/Assets/icon.ico"
         Width="1200"
         Height="800">

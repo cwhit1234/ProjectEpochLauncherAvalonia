@@ -1,0 +1,98 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ProjectEpochLauncherAvalonia.DownloadProgressDialog"
+        Title="Downloading Updates"
+        Width="500"
+        Height="300"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+		Icon="/Assets/icon.ico">
+
+	<Border Background="#CC16213E"
+            CornerRadius="10"
+            Padding="30">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<!-- Title -->
+			<TextBlock Grid.Row="0"
+                       Text="Downloading Game Updates"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       Foreground="#F0E68C"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
+
+			<!-- Status Text -->
+			<TextBlock Grid.Row="1"
+                       x:Name="StatusText"
+                       Text="Preparing download..."
+                       FontSize="14"
+                       Foreground="#B0B0C0"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"/>
+
+			<!-- File Progress Bar -->
+			<StackPanel Grid.Row="2"
+                        Margin="0,20,0,10">
+				<TextBlock x:Name="FileProgressLabel"
+                           Text="File: Preparing..."
+                           FontSize="12"
+                           Foreground="#B0B0C0"
+                           Margin="0,0,0,5"/>
+				<ProgressBar x:Name="FileProgressBar"
+                             Height="8"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0"
+                             Background="#33FFFFFF"
+                             Foreground="#4CAF50"/>
+			</StackPanel>
+
+			<!-- Overall Progress Bar -->
+			<StackPanel Grid.Row="3"
+                        Margin="0,10,0,20">
+				<TextBlock x:Name="OverallProgressLabel"
+                           Text="Overall: 0%"
+                           FontSize="12"
+                           Foreground="#B0B0C0"
+                           Margin="0,0,0,5"/>
+				<ProgressBar x:Name="OverallProgressBar"
+                             Height="12"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="0"
+                             Background="#33FFFFFF"
+                             Foreground="#1E88E5"/>
+			</StackPanel>
+
+			<!-- Cancel Button -->
+			<Button Grid.Row="4"
+                    x:Name="CancelButton"
+                    Content="Cancel"
+                    Width="100"
+                    Height="35"
+                    HorizontalAlignment="Center"
+                    Background="#F44336"
+                    Foreground="White"
+                    CornerRadius="6"
+                    FontSize="14"
+                    Cursor="Hand">
+				<Button.Styles>
+					<Style Selector="Button:pointerover">
+						<Setter Property="Background" Value="#D32F2F"/>
+					</Style>
+				</Button.Styles>
+			</Button>
+		</Grid>
+	</Border>
+</Window>

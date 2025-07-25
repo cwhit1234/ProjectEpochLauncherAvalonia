@@ -2,9 +2,13 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
+using ProjectEpochLauncherAvalonia.Services;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProjectEpochLauncherAvalonia
@@ -17,6 +21,8 @@ namespace ProjectEpochLauncherAvalonia
         private Button? _donateButton;
         private Button? _discordButton;
         private ConfigurationManager _configManager;
+        private UpdateService _updateService;
+        private CancellationTokenSource? _updateCheckCancellation;
 
         private const string DonateUrl = "https://github.com/sponsors/Project-Epoch";
         private const string DiscordUrl = "https://www.project-epoch.net/community/discord";
@@ -25,8 +31,9 @@ namespace ProjectEpochLauncherAvalonia
         {
             InitializeComponent();
 
-            // Initialize configuration manager
+            // Initialize configuration manager and update service
             _configManager = new ConfigurationManager();
+            _updateService = new UpdateService(_configManager);
 
             // Wire up controls after initialization
             _contentArea = this.FindControl<TransitioningContentControl>("ContentArea");
@@ -48,7 +55,7 @@ namespace ProjectEpochLauncherAvalonia
             if (_discordButton != null)
                 _discordButton.Click += OnDiscordButtonClick;
 
-            // Set initial content
+            // Set initial content (this will only run for returning users now)
             NavigateToHome();
 
             LogDebug("MainWindow initialized successfully");
@@ -57,6 +64,14 @@ namespace ProjectEpochLauncherAvalonia
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            // Cancel any ongoing update checks
+            _updateCheckCancellation?.Cancel();
+            _updateCheckCancellation?.Dispose();
+            base.OnClosed(e);
         }
 
         private void OnNavigationClick(object? sender, RoutedEventArgs e)
@@ -127,7 +142,13 @@ namespace ProjectEpochLauncherAvalonia
 
         private void NavigateToHome()
         {
-            if (_contentArea == null) return;
+            LogDebug("NavigateToHome() called");
+
+            if (_contentArea == null)
+            {
+                LogError("ContentArea is null in NavigateToHome");
+                return;
+            }
 
             var homeContent = new Grid();
 
@@ -144,54 +165,356 @@ namespace ProjectEpochLauncherAvalonia
 
             homeContent.Children.Add(welcomeText);
 
-            // Only add Play button if required files exist
-            if (AreRequiredFilesPresent())
+            // Create button panel for bottom-right positioning
+            var buttonPanel = new StackPanel
             {
-                var playButton = new Button
-                {
-                    Content = "PLAY",
-                    FontSize = 18,
-                    FontWeight = Avalonia.Media.FontWeight.Bold,
-                    Foreground = Avalonia.Media.Brushes.White,
-                    Background = Avalonia.Media.Brush.Parse("#1E88E5"),
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
-                    Padding = new Avalonia.Thickness(40, 15),
-                    CornerRadius = new Avalonia.CornerRadius(8),
-                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
-                };
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 15,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom
+            };
 
-                // Add hover effect styling
-                playButton.PointerEntered += (s, e) =>
-                {
-                    playButton.Background = Avalonia.Media.Brush.Parse("#1976D2");
-                    LogDebug("Play button hover state");
-                };
+            // Check if we have a valid install path
+            var installPath = _configManager.InstallPath;
+            var hasValidPath = !string.IsNullOrEmpty(installPath) && Directory.Exists(installPath);
 
-                playButton.PointerExited += (s, e) =>
-                {
-                    playButton.Background = Avalonia.Media.Brush.Parse("#1E88E5");
-                };
+            LogDebug($"Install path check - Path: '{installPath}', HasValidPath: {hasValidPath}");
 
-                playButton.Click += OnPlayButtonClick;
-                homeContent.Children.Add(playButton);
+            // Determine what status message to show (if any)
+            string statusMessage = "";
+            bool isErrorMessage = false;
+
+            if (hasValidPath)
+            {
+                // Always show check updates button when we have a valid path
+                var checkUpdatesButton = CreateCheckUpdatesButton();
+                buttonPanel.Children.Add(checkUpdatesButton);
+
+                // Only show Play button if required files exist
+                var filesPresent = AreRequiredFilesPresent();
+                LogDebug($"Required files present: {filesPresent}");
+
+                if (filesPresent)
+                {
+                    var playButton = CreatePlayButton();
+                    buttonPanel.Children.Add(playButton);
+
+                    // No status message needed when game is ready
+                    LogDebug("Game is ready - no status message needed");
+                }
+                else
+                {
+                    // Set message about missing files
+                    statusMessage = "Game files not found. Click 'Check for Updates' to download the latest version.";
+                    isErrorMessage = false;
+                    LogDebug("Game files missing - will show status message");
+                }
             }
             else
             {
-                // Optionally show a message about missing files
-                var statusText = new TextBlock
-                {
-                    Text = "Game files not found. Please check your install path in Settings.",
-                    FontSize = 14,
-                    Foreground = Avalonia.Media.Brush.Parse("#FFB74D"),
-                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
-                    Margin = new Avalonia.Thickness(0, 0, 0, 20)
-                };
-                homeContent.Children.Add(statusText);
+                // Set error message about missing install path
+                statusMessage = "No install path configured.\nPlease go to Settings to select an installation location.";
+                isErrorMessage = true;
+                LogDebug("No valid install path - will show error message");
             }
 
+            homeContent.Children.Add(buttonPanel);
+
+            // Add status message if needed
+            if (!string.IsNullOrEmpty(statusMessage))
+            {
+                var statusTextBlock = new TextBlock
+                {
+                    Name = "StatusMessage",
+                    Text = statusMessage,
+                    FontSize = 14,
+                    Foreground = isErrorMessage ?
+                        Avalonia.Media.Brush.Parse("#F44336") :
+                        Avalonia.Media.Brush.Parse("#4CAF50"),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    Margin = new Avalonia.Thickness(20, 0, 20, 100), // Space above buttons
+                    MaxWidth = 600,
+                    Opacity = 1.0
+                };
+
+                homeContent.Children.Add(statusTextBlock);
+                LogDebug($"Added status message to home content: '{statusMessage}'");
+            }
+
+            // Set the content once with everything in place
             _contentArea.Content = homeContent;
+
+            LogDebug("NavigateToHome() completed");
+        }
+
+        private Button CreateCheckUpdatesButton()
+        {
+            var checkUpdatesButton = new Button
+            {
+                Content = "Check for Updates",
+                FontSize = 14,
+                FontWeight = Avalonia.Media.FontWeight.Normal,
+                Foreground = Avalonia.Media.Brushes.White,
+                Background = Avalonia.Media.Brush.Parse("#4CAF50"),
+                Padding = new Avalonia.Thickness(20, 12),
+                CornerRadius = new Avalonia.CornerRadius(8),
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            checkUpdatesButton.PointerEntered += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse("#45A049");
+            checkUpdatesButton.PointerExited += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+            checkUpdatesButton.Click += OnCheckUpdatesButtonClick;
+
+            return checkUpdatesButton;
+        }
+
+        private Button CreatePlayButton()
+        {
+            var playButton = new Button
+            {
+                Content = "PLAY",
+                FontSize = 18,
+                FontWeight = Avalonia.Media.FontWeight.Bold,
+                Foreground = Avalonia.Media.Brushes.White,
+                Background = Avalonia.Media.Brush.Parse("#1E88E5"),
+                Padding = new Avalonia.Thickness(40, 15),
+                CornerRadius = new Avalonia.CornerRadius(8),
+                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+
+            playButton.PointerEntered += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse("#1976D2");
+            playButton.PointerExited += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse("#1E88E5");
+            playButton.Click += OnPlayButtonClick;
+
+            return playButton;
+        }
+
+        private async void OnCheckUpdatesButtonClick(object? sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            if (button == null) return;
+
+            try
+            {
+                LogDebug("Check for updates button clicked");
+
+                // Cancel any existing update check
+                _updateCheckCancellation?.Cancel();
+                _updateCheckCancellation = new CancellationTokenSource();
+
+                // Update button state
+                button.Content = "Checking...";
+                button.IsEnabled = false;
+
+                var result = await _updateService.CheckForUpdatesAsync(_updateCheckCancellation.Token);
+
+                if (result.Success)
+                {
+                    if (result.UpdatesAvailable)
+                    {
+                        var sizeText = FormatFileSize(result.TotalSize);
+                        LogDebug($"Updates found: {result.FilesToUpdate.Count} files, {sizeText}");
+
+                        // Update button to show download option
+                        button.Content = $"Download Updates ({sizeText})";
+                        button.Background = Avalonia.Media.Brush.Parse("#FF9800");
+
+                        // Change button click handler to download
+                        button.Click -= OnCheckUpdatesButtonClick;
+                        button.Click += async (s, e) => await OnDownloadUpdatesButtonClick(s, e, result.FilesToUpdate);
+                    }
+                    else
+                    {
+                        LogDebug("No updates available");
+                        button.Content = "Up to Date";
+                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+
+                        // Reset button after 3 seconds
+                        _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            if (button.Content?.ToString() == "Up to Date")
+                            {
+                                button.Content = "Check for Updates";
+                                button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                            }
+                        }));
+                    }
+                }
+                else
+                {
+                    LogError($"Update check failed: {result.ErrorMessage}");
+                    button.Content = "Check Failed";
+                    button.Background = Avalonia.Media.Brush.Parse("#F44336");
+
+                    // Reset button after 3 seconds
+                    _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (button.Content?.ToString() == "Check Failed")
+                        {
+                            button.Content = "Check for Updates";
+                            button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        }
+                    }));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                LogDebug("Update check was cancelled");
+                button.Content = "Check for Updates";
+                button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+            }
+            catch (Exception ex)
+            {
+                LogError($"Update check error: {ex.Message}");
+                button.Content = "Check Failed";
+                button.Background = Avalonia.Media.Brush.Parse("#F44336");
+            }
+            finally
+            {
+                button.IsEnabled = true;
+            }
+        }
+
+        private async Task OnDownloadUpdatesButtonClick(object? sender, RoutedEventArgs e, List<GameFile> filesToDownload)
+        {
+            var button = sender as Button;
+            if (button == null || filesToDownload == null) return;
+
+            try
+            {
+                LogDebug($"Starting download of {filesToDownload.Count} files");
+
+                // Create cancellation token for this download
+                _updateCheckCancellation?.Cancel();
+                _updateCheckCancellation = new CancellationTokenSource();
+
+                // Update button state
+                button.Content = "Downloading...";
+                button.IsEnabled = false;
+                button.Background = Avalonia.Media.Brush.Parse("#2196F3");
+
+                // Create and show progress dialog
+                var progressDialog = new DownloadProgressDialog(_updateCheckCancellation);
+
+                // Show dialog without blocking
+                progressDialog.Show(this);
+
+                // Set up progress reporting
+                var progress = new Progress<DownloadProgress>(p =>
+                {
+                    progressDialog.UpdateProgress(p);
+                });
+
+                // Start the download
+                var downloadResult = await _updateService.DownloadFilesAsync(
+                    filesToDownload,
+                    progress,
+                    _updateCheckCancellation.Token);
+
+                if (downloadResult.Success)
+                {
+                    LogDebug($"Download completed successfully: {downloadResult.FilesDownloaded} files, {downloadResult.TotalBytesDownloaded} bytes");
+
+                    // Update progress dialog
+                    progressDialog.SetCompleted(true, $"Download complete!\n\n{downloadResult.FilesDownloaded} files downloaded\n{FormatFileSize(downloadResult.TotalBytesDownloaded)} total");
+
+                    // Update button state
+                    button.Content = "Download Complete";
+                    button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+
+                    // Refresh the home view to show play button if files are now present
+                    NavigateToHome();
+                }
+                else
+                {
+                    LogError($"Download failed: {downloadResult.ErrorMessage}");
+
+                    // Update progress dialog
+                    progressDialog.SetCompleted(false, $"Download failed!\n\n{downloadResult.ErrorMessage}");
+
+                    // Update button state
+                    button.Content = "Download Failed";
+                    button.Background = Avalonia.Media.Brush.Parse("#F44336");
+
+                    // Reset button after 5 seconds
+                    _ = Task.Delay(5000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                    {
+                        if (button.Content?.ToString() == "Download Failed")
+                        {
+                            button.Content = "Check for Updates";
+                            button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                            button.Click -= OnCheckUpdatesButtonClick;
+                            button.Click += OnCheckUpdatesButtonClick;
+                        }
+                    }));
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                LogDebug("Download was cancelled");
+
+                // Update button state
+                button.Content = "Download Cancelled";
+                button.Background = Avalonia.Media.Brush.Parse("#FF9800");
+
+                // Reset button after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (button.Content?.ToString() == "Download Cancelled")
+                    {
+                        button.Content = "Check for Updates";
+                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        button.Click -= OnCheckUpdatesButtonClick;
+                        button.Click += OnCheckUpdatesButtonClick;
+                    }
+                }));
+            }
+            catch (Exception ex)
+            {
+                LogError($"Download error: {ex.Message}");
+
+                // Update button state
+                button.Content = "Download Error";
+                button.Background = Avalonia.Media.Brush.Parse("#F44336");
+
+                // Reset button after 5 seconds
+                _ = Task.Delay(5000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    if (button.Content?.ToString() == "Download Error")
+                    {
+                        button.Content = "Check for Updates";
+                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        button.Click -= OnCheckUpdatesButtonClick;
+                        button.Click += OnCheckUpdatesButtonClick;
+                    }
+                }));
+            }
+            finally
+            {
+                button.IsEnabled = true;
+            }
+        }
+
+        private static string FormatFileSize(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int counter = 0;
+            double number = bytes;
+
+            while (Math.Round(number / 1024) >= 1)
+            {
+                number /= 1024;
+                counter++;
+            }
+
+            return $"{number:n1} {suffixes[counter]}";
         }
 
         private void OnPlayButtonClick(object? sender, RoutedEventArgs e)
@@ -199,13 +522,283 @@ namespace ProjectEpochLauncherAvalonia
             try
             {
                 LogDebug("Play button clicked");
-                // TODO: Implement game launch logic here
-                // For now, just log the action
-                Debug.WriteLine("Launching Project Epoch...");
+                LaunchGame(sender as Button);
             }
             catch (Exception ex)
             {
                 LogError($"Play button error: {ex.Message}");
+            }
+        }
+
+        private async void LaunchGame(Button? playButton)
+        {
+            try
+            {
+                var installPath = _configManager.InstallPath;
+                if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
+                {
+                    LogError($"Invalid install path: {installPath}");
+                    ShowGameLaunchError("Install path is not configured or does not exist. Please check your settings.");
+                    return;
+                }
+
+                var gameExePath = Path.Combine(installPath, "Project-Epoch.exe");
+                if (!File.Exists(gameExePath))
+                {
+                    LogError($"Game executable not found: {gameExePath}");
+                    ShowGameLaunchError("Project-Epoch.exe not found. Please check for updates to download the game files.");
+                    return;
+                }
+
+                LogDebug($"Launching game from: {gameExePath}");
+
+                // Update button state to show launching
+                if (playButton != null)
+                {
+                    playButton.Content = "Launching...";
+                    playButton.IsEnabled = false;
+                }
+
+                // Launch the game
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = gameExePath,
+                    WorkingDirectory = installPath,
+                    UseShellExecute = true,
+                    CreateNoWindow = false
+                };
+
+                var gameProcess = Process.Start(processStartInfo);
+
+                if (gameProcess != null)
+                {
+                    LogDebug($"Game launched successfully. Process ID: {gameProcess.Id}");
+
+                    // Show success message that stays visible
+                    ShowHomeStatusMessage("Game launched successfully! Enjoy playing Project Epoch.", isError: false);
+
+                    // Minimize the launcher after a short delay
+                    _ = Task.Delay(2000).ContinueWith(_ =>
+                    {
+                        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            try
+                            {
+                                this.WindowState = WindowState.Minimized;
+                            }
+                            catch (Exception ex)
+                            {
+                                LogError($"Error minimizing launcher: {ex.Message}");
+                            }
+                        });
+                    });
+
+                    // Monitor the game process in the background
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await gameProcess.WaitForExitAsync();
+                            LogDebug($"Game process exited with code: {gameProcess.ExitCode}");
+
+                            // Restore launcher when game closes
+                            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                try
+                                {
+                                    this.WindowState = WindowState.Normal;
+                                    this.Activate();
+
+                                    // Reset play button
+                                    if (playButton != null)
+                                    {
+                                        playButton.Content = "PLAY";
+                                        playButton.IsEnabled = true;
+                                    }
+
+                                    // Clear the launch success message when returning
+                                    ClearHomeStatusMessage();
+                                }
+                                catch (Exception ex)
+                                {
+                                    LogError($"Error restoring launcher after game exit: {ex.Message}");
+                                }
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError($"Error monitoring game process: {ex.Message}");
+                        }
+                        finally
+                        {
+                            gameProcess?.Dispose();
+                        }
+                    });
+                }
+                else
+                {
+                    LogError("Failed to start game process");
+                    ShowGameLaunchError("Failed to launch the game. Please try again.");
+
+                    // Reset button
+                    if (playButton != null)
+                    {
+                        playButton.Content = "PLAY";
+                        playButton.IsEnabled = true;
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                LogError($"Access denied launching game: {ex.Message}");
+                ShowGameLaunchError("Access denied. Please run the launcher as administrator or check file permissions.");
+                ResetPlayButton(playButton);
+            }
+            catch (System.ComponentModel.Win32Exception ex)
+            {
+                LogError($"Win32 error launching game: {ex.Message}");
+                ShowGameLaunchError($"Failed to launch game: {ex.Message}");
+                ResetPlayButton(playButton);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Unexpected error launching game: {ex.Message}");
+                ShowGameLaunchError($"An unexpected error occurred: {ex.Message}");
+                ResetPlayButton(playButton);
+            }
+        }
+
+        private void ResetPlayButton(Button? playButton)
+        {
+            try
+            {
+                if (playButton != null)
+                {
+                    playButton.Content = "PLAY";
+                    playButton.IsEnabled = true;
+                }
+                else
+                {
+                    // Fallback: Find and reset the play button in the UI
+                    var homeContent = _contentArea?.Content as Grid;
+                    if (homeContent != null)
+                    {
+                        foreach (var child in homeContent.Children)
+                        {
+                            if (child is StackPanel buttonPanel)
+                            {
+                                foreach (var button in buttonPanel.Children)
+                                {
+                                    if (button is Button btn && btn.Content?.ToString() == "Launching...")
+                                    {
+                                        btn.Content = "PLAY";
+                                        btn.IsEnabled = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error resetting play button: {ex.Message}");
+            }
+        }
+
+        private void ShowGameLaunchError(string message)
+        {
+            try
+            {
+                LogError($"Game launch error: {message}");
+
+                // Show error message in the home window (persistent)
+                ShowHomeStatusMessage(message, isError: true);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error showing launch error: {ex.Message}");
+            }
+        }
+
+        private void ShowHomeStatusMessage(string message, bool isError = false)
+        {
+            try
+            {
+                LogDebug($"ShowHomeStatusMessage called with: '{message}' (Error: {isError})");
+
+                var homeContent = _contentArea?.Content as Grid;
+                if (homeContent == null)
+                {
+                    LogError("HomeContent is null, cannot show status message");
+                    return;
+                }
+
+                // Remove any existing status message
+                var existingStatus = homeContent.Children.OfType<TextBlock>()
+                    .FirstOrDefault(tb => tb.Name == "StatusMessage");
+                if (existingStatus != null)
+                {
+                    LogDebug($"Removing existing status message: '{existingStatus.Text}'");
+                    homeContent.Children.Remove(existingStatus);
+                }
+
+                // Don't add empty messages
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    LogDebug("Skipping empty message");
+                    return;
+                }
+
+                // Create new status message
+                var statusMessage = new TextBlock
+                {
+                    Name = "StatusMessage",
+                    Text = message,
+                    FontSize = 14,
+                    Foreground = isError ?
+                        Avalonia.Media.Brush.Parse("#F44336") :
+                        Avalonia.Media.Brush.Parse("#4CAF50"),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    TextAlignment = Avalonia.Media.TextAlignment.Center,
+                    TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+                    Margin = new Avalonia.Thickness(20, 0, 20, 100), // Space above buttons
+                    MaxWidth = 600,
+                    Opacity = 1.0 // Show immediately without animation
+                };
+
+                // Add the message directly to the grid
+                homeContent.Children.Add(statusMessage);
+
+                LogDebug($"Successfully added status message to UI: '{message}'");
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error showing status message: {ex.Message}");
+            }
+        }
+
+        private void ClearHomeStatusMessage()
+        {
+            try
+            {
+                var homeContent = _contentArea?.Content as Grid;
+                if (homeContent == null) return;
+
+                var statusMessage = homeContent.Children.OfType<TextBlock>()
+                    .FirstOrDefault(tb => tb.Name == "StatusMessage");
+
+                if (statusMessage != null)
+                {
+                    homeContent.Children.Remove(statusMessage);
+                    LogDebug("Cleared status message");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error clearing status message: {ex.Message}");
             }
         }
 
@@ -272,7 +865,9 @@ namespace ProjectEpochLauncherAvalonia
                 Padding = new Avalonia.Thickness(20, 8),
                 CornerRadius = new Avalonia.CornerRadius(4),
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-                Margin = new Avalonia.Thickness(0, 5, 0, 0)
+                Margin = new Avalonia.Thickness(0, 5, 0, 0),
+                HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
             // Add hover effect to button

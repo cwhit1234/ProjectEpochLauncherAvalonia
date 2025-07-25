@@ -1,0 +1,93 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ProjectEpochLauncherAvalonia.SetupWizard"
+        Title="Project Epoch - Setup Wizard"
+        Width="600"
+        Height="500"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        ShowInTaskbar="True"
+		Icon="/Assets/icon.ico">
+
+	<Border Background="#CC16213E"
+            CornerRadius="10"
+            Padding="40">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<!-- Header -->
+			<StackPanel Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,30">
+				<TextBlock Text="Welcome to Project Epoch!"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#F0E68C"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+				<TextBlock Text="Let's get you set up to play"
+                           FontSize="16"
+                           Foreground="#B0B0C0"
+                           HorizontalAlignment="Center"/>
+			</StackPanel>
+
+			<!-- Content Area -->
+			<TransitioningContentControl x:Name="WizardContent" Grid.Row="1">
+				<TransitioningContentControl.PageTransition>
+					<CrossFade Duration="0:00:00.3"/>
+				</TransitioningContentControl.PageTransition>
+			</TransitioningContentControl>
+
+			<!-- Navigation Buttons -->
+			<Grid Grid.Row="2" Margin="0,30,0,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<Button x:Name="BackButton"
+                        Grid.Column="1"
+                        Content="Back"
+                        Width="100"
+                        Height="40"
+                        Margin="0,0,15,0"
+                        Background="#666666"
+                        Foreground="White"
+                        CornerRadius="6"
+                        IsVisible="False"
+                        Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#777777"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+
+				<Button x:Name="NextButton"
+                        Grid.Column="2"
+                        Content="Next"
+                        Width="100"
+                        Height="40"
+                        Background="#1E88E5"
+                        Foreground="White"
+                        CornerRadius="6"
+                        Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#1976D2"/>
+						</Style>
+						<Style Selector="Button:disabled">
+							<Setter Property="Background" Value="#555555"/>
+							<Setter Property="Cursor" Value="Arrow"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+			</Grid>
+		</Grid>
+	</Border>
+</Window>
