@@ -13,7 +13,12 @@ namespace ProjectEpochLauncherAvalonia
         private TransitioningContentControl? _contentArea;
         private RadioButton? _homeButton;
         private RadioButton? _settingsButton;
+        private Button? _donateButton;
+        private Button? _discordButton;
         private ConfigurationManager _configManager;
+
+        private const string DonateUrl = "https://github.com/sponsors/Project-Epoch";
+        private const string DiscordUrl = "https://www.project-epoch.net/community/discord";
 
         public MainWindow()
         {
@@ -22,16 +27,25 @@ namespace ProjectEpochLauncherAvalonia
             // Initialize configuration manager
             _configManager = new ConfigurationManager();
 
-            // Wire up navigation after initialization
+            // Wire up controls after initialization
             _contentArea = this.FindControl<TransitioningContentControl>("ContentArea");
             _homeButton = this.FindControl<RadioButton>("HomeButton");
             _settingsButton = this.FindControl<RadioButton>("SettingsButton");
+            _donateButton = this.FindControl<Button>("DonateButton");
+            _discordButton = this.FindControl<Button>("DiscordButton");
 
+            // Wire up navigation events
             if (_homeButton != null)
                 _homeButton.Click += OnNavigationClick;
 
             if (_settingsButton != null)
                 _settingsButton.Click += OnNavigationClick;
+
+            if (_donateButton != null)
+                _donateButton.Click += OnDonateButtonClick;
+
+            if (_discordButton != null)
+                _discordButton.Click += OnDiscordButtonClick;
 
             // Set initial content
             NavigateToHome();
@@ -62,6 +76,51 @@ namespace ProjectEpochLauncherAvalonia
             catch (Exception ex)
             {
                 LogError($"Navigation error: {ex.Message}");
+            }
+        }
+
+        private void OnDonateButtonClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LogDebug($"Opening donate URL: {DonateUrl}");
+                OpenUrl(DonateUrl);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error opening donate URL: {ex.Message}");
+            }
+        }
+
+        private void OnDiscordButtonClick(object? sender, RoutedEventArgs e)
+        {
+            try
+            {
+                LogDebug($"Opening Discord URL: {DiscordUrl}");
+                OpenUrl(DiscordUrl);
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error opening Discord URL: {ex.Message}");
+            }
+        }
+
+        private void OpenUrl(string url)
+        {
+            try
+            {
+                var processStartInfo = new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                };
+
+                Process.Start(processStartInfo);
+                LogDebug($"Successfully opened URL: {url}");
+            }
+            catch (Exception ex)
+            {
+                LogError($"Failed to open URL '{url}': {ex.Message}");
             }
         }
 
