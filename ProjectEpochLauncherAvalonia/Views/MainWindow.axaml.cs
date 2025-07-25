@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace ProjectEpochLauncherAvalonia
@@ -141,37 +142,54 @@ namespace ProjectEpochLauncherAvalonia
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
-            // Play button in bottom right
-            var playButton = new Button
-            {
-                Content = "PLAY",
-                FontSize = 18,
-                FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brushes.White,
-                Background = Avalonia.Media.Brush.Parse("#1E88E5"),
-                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
-                Padding = new Avalonia.Thickness(40, 15),
-                CornerRadius = new Avalonia.CornerRadius(8),
-                Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
-            };
-
-            // Add hover effect styling
-            playButton.PointerEntered += (s, e) =>
-            {
-                playButton.Background = Avalonia.Media.Brush.Parse("#1976D2");
-                LogDebug("Play button hover state");
-            };
-
-            playButton.PointerExited += (s, e) =>
-            {
-                playButton.Background = Avalonia.Media.Brush.Parse("#1E88E5");
-            };
-
-            playButton.Click += OnPlayButtonClick;
-
             homeContent.Children.Add(welcomeText);
-            homeContent.Children.Add(playButton);
+
+            // Only add Play button if required files exist
+            if (AreRequiredFilesPresent())
+            {
+                var playButton = new Button
+                {
+                    Content = "PLAY",
+                    FontSize = 18,
+                    FontWeight = Avalonia.Media.FontWeight.Bold,
+                    Foreground = Avalonia.Media.Brushes.White,
+                    Background = Avalonia.Media.Brush.Parse("#1E88E5"),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    Padding = new Avalonia.Thickness(40, 15),
+                    CornerRadius = new Avalonia.CornerRadius(8),
+                    Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand)
+                };
+
+                // Add hover effect styling
+                playButton.PointerEntered += (s, e) =>
+                {
+                    playButton.Background = Avalonia.Media.Brush.Parse("#1976D2");
+                    LogDebug("Play button hover state");
+                };
+
+                playButton.PointerExited += (s, e) =>
+                {
+                    playButton.Background = Avalonia.Media.Brush.Parse("#1E88E5");
+                };
+
+                playButton.Click += OnPlayButtonClick;
+                homeContent.Children.Add(playButton);
+            }
+            else
+            {
+                // Optionally show a message about missing files
+                var statusText = new TextBlock
+                {
+                    Text = "Game files not found. Please check your install path in Settings.",
+                    FontSize = 14,
+                    Foreground = Avalonia.Media.Brush.Parse("#FFB74D"),
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    Margin = new Avalonia.Thickness(0, 0, 0, 20)
+                };
+                homeContent.Children.Add(statusText);
+            }
 
             _contentArea.Content = homeContent;
         }
@@ -337,6 +355,42 @@ namespace ProjectEpochLauncherAvalonia
         {
             _configManager.InstallPath = path;
             LogDebug($"Install path saved: {path}");
+
+            // Refresh home view if currently showing home
+            if (_homeButton?.IsChecked == true)
+            {
+                NavigateToHome();
+            }
+        }
+
+        private bool AreRequiredFilesPresent()
+        {
+            try
+            {
+                var installPath = _configManager.InstallPath;
+
+                if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
+                {
+                    LogDebug($"Install path does not exist: {installPath}");
+                    return false;
+                }
+
+                var wowExePath = Path.Combine(installPath, "WoW.exe");
+                var projectEpochExePath = Path.Combine(installPath, "Project-Epoch.exe");
+
+                bool wowExists = File.Exists(wowExePath);
+                bool projectEpochExists = File.Exists(projectEpochExePath);
+
+                LogDebug($"WoW.exe exists: {wowExists} at {wowExePath}");
+                LogDebug($"Project-Epoch.exe exists: {projectEpochExists} at {projectEpochExePath}");
+
+                return wowExists && projectEpochExists;
+            }
+            catch (Exception ex)
+            {
+                LogError($"Error checking required files: {ex.Message}");
+                return false;
+            }
         }
 
         #region Logging
