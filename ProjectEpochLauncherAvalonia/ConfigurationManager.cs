@@ -34,6 +34,26 @@ namespace ProjectEpochLauncherAvalonia
             }
         }
 
+        public bool SetupCompleted
+        {
+            get => _configuration.SetupCompleted;
+            set
+            {
+                _configuration.SetupCompleted = value;
+                SaveConfiguration();
+            }
+        }
+
+        public DateTime LastUpdateCheck
+        {
+            get => _configuration.LastUpdateCheck;
+            set
+            {
+                _configuration.LastUpdateCheck = value;
+                SaveConfiguration();
+            }
+        }
+
         private string GetConfigDirectory()
         {
             // Cross-platform config directory resolution
@@ -110,9 +130,9 @@ namespace ProjectEpochLauncherAvalonia
                     var jsonString = File.ReadAllText(_configFilePath);
                     var config = JsonSerializer.Deserialize<LauncherConfiguration>(jsonString);
 
-                    if (config != null && !string.IsNullOrEmpty(config.InstallPath))
+                    if (config != null)
                     {
-                        LogDebug($"Configuration loaded successfully. Install path: {config.InstallPath}");
+                        LogDebug($"Configuration loaded successfully. Install path: {config.InstallPath}, Setup completed: {config.SetupCompleted}");
                         return config;
                     }
                 }
@@ -151,11 +171,19 @@ namespace ProjectEpochLauncherAvalonia
         {
             var config = new LauncherConfiguration
             {
-                InstallPath = GetDefaultInstallPath()
+                InstallPath = GetDefaultInstallPath(),
+                SetupCompleted = false,
+                LastUpdateCheck = DateTime.MinValue
             };
 
             SaveConfiguration();
             return config;
+        }
+
+        public void MarkSetupCompleted()
+        {
+            SetupCompleted = true;
+            LogDebug("Setup marked as completed");
         }
 
         #region Logging
@@ -176,5 +204,7 @@ namespace ProjectEpochLauncherAvalonia
     public class LauncherConfiguration
     {
         public string InstallPath { get; set; } = string.Empty;
+        public bool SetupCompleted { get; set; } = false;
+        public DateTime LastUpdateCheck { get; set; } = DateTime.MinValue;
     }
 }
