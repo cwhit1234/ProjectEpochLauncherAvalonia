@@ -191,11 +191,11 @@ namespace ProjectEpochLauncherAvalonia
             // Only show Play button on Windows with valid setup
             if (PlatformSupport.SupportsGameLaunching && hasValidPath)
             {
-                // Only show Play button if required files exist
-                var filesPresent = AreRequiredFilesPresent();
-                LogDebug($"Required files present: {filesPresent}");
+                // Check what files are missing and create appropriate message
+                var missingFilesInfo = GetMissingFilesInfo();
+                LogDebug($"Missing files check - HasMissingFiles: {missingFilesInfo.HasMissingFiles}");
 
-                if (filesPresent)
+                if (!missingFilesInfo.HasMissingFiles)
                 {
                     var playButton = CreatePlayButton();
                     buttonPanel.Children.Add(playButton);
@@ -205,10 +205,10 @@ namespace ProjectEpochLauncherAvalonia
                 }
                 else
                 {
-                    // Set message about missing files
-                    statusMessage = $"Game files not found. Click '{Constants.CHECK_FOR_UPDATES_BUTTON_TEXT}' to download the latest version.";
-                    isErrorMessage = false;
-                    LogDebug("Game files missing - will show status message");
+                    // Set message about missing files with details
+                    statusMessage = missingFilesInfo.Message;
+                    isErrorMessage = missingFilesInfo.HasBaseClientFiles;
+                    LogDebug($"Game files missing - will show status message: {statusMessage}");
                 }
             }
             else if (!PlatformSupport.SupportsGameLaunching)
@@ -260,6 +260,101 @@ namespace ProjectEpochLauncherAvalonia
             _contentArea.Content = homeContent;
 
             LogDebug("NavigateToHome() completed");
+        }
+
+        private MissingFilesInfo GetMissingFilesInfo()
+        {
+            var installPath = _configManager.InstallPath;
+            var missingFiles = new List<string>();
+            var missingBaseClientFiles = new List<string>();
+            var missingProjectEpochFiles = new List<string>();
+
+            if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
+            {
+                return new MissingFilesInfo
+                {
+                    HasMissingFiles = true,
+                    HasBaseClientFiles = false,
+                    Message = "Install directory does not exist.\nPlease check your settings and ensure the installation path is valid."
+                };
+            }
+
+            // Check for base WoW client files
+            var wowExePath = Path.Combine(installPath, Constants.WOW_EXECUTABLE);
+            if (!File.Exists(wowExePath))
+            {
+                missingBaseClientFiles.Add(Constants.WOW_EXECUTABLE);
+            }
+
+            // Check for Project Epoch files
+            var projectEpochExePath = Path.Combine(installPath, Constants.PROJECT_EPOCH_EXECUTABLE);
+            if (!File.Exists(projectEpochExePath))
+            {
+                missingProjectEpochFiles.Add(Constants.PROJECT_EPOCH_EXECUTABLE);
+            }
+
+            // Build the message based on what's missing
+            if (missingBaseClientFiles.Count == 0 && missingProjectEpochFiles.Count == 0)
+            {
+                return new MissingFilesInfo
+                {
+                    HasMissingFiles = false,
+                    HasBaseClientFiles = false,
+                    Message = ""
+                };
+            }
+
+            var messageBuilder = new System.Text.StringBuilder();
+            messageBuilder.AppendLine("Missing game files:");
+            messageBuilder.AppendLine();
+
+            // Show missing base client files first
+            if (missingBaseClientFiles.Count > 0)
+            {
+                messageBuilder.AppendLine("Base WoW Client files:");
+                foreach (var file in missingBaseClientFiles)
+                {
+                    messageBuilder.AppendLine($"• {file}");
+                }
+                messageBuilder.AppendLine();
+                messageBuilder.AppendLine("You need to obtain the World of Warcraft 3.3.5a client");
+                messageBuilder.AppendLine("and place it in your installation directory.");
+
+                if (missingProjectEpochFiles.Count > 0)
+                {
+                    messageBuilder.AppendLine();
+                }
+            }
+
+            // Show missing Project Epoch files
+            if (missingProjectEpochFiles.Count > 0)
+            {
+                if (missingBaseClientFiles.Count > 0)
+                {
+                    messageBuilder.AppendLine("Project Epoch files:");
+                }
+
+                foreach (var file in missingProjectEpochFiles)
+                {
+                    messageBuilder.AppendLine($"• {file}");
+                }
+                messageBuilder.AppendLine();
+                messageBuilder.AppendLine($"Click '{Constants.CHECK_FOR_UPDATES_BUTTON_TEXT}' to download Project Epoch files.");
+            }
+
+            return new MissingFilesInfo
+            {
+                HasMissingFiles = true,
+                HasBaseClientFiles = missingBaseClientFiles.Count > 0,
+                Message = messageBuilder.ToString().TrimEnd()
+            };
+        }
+
+        private class MissingFilesInfo
+        {
+            public bool HasMissingFiles { get; set; }
+            public bool HasBaseClientFiles { get; set; }
+            public string Message { get; set; } = "";
         }
 
         private Button CreateCheckUpdatesButton()
@@ -977,36 +1072,6 @@ namespace ProjectEpochLauncherAvalonia
             if (_homeButton?.IsChecked == true)
             {
                 NavigateToHome();
-            }
-        }
-
-        private bool AreRequiredFilesPresent()
-        {
-            try
-            {
-                var installPath = _configManager.InstallPath;
-
-                if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
-                {
-                    LogDebug($"Install path does not exist: {installPath}");
-                    return false;
-                }
-
-                var wowExePath = Path.Combine(installPath, Constants.WOW_EXECUTABLE);
-                var projectEpochExePath = Path.Combine(installPath, Constants.PROJECT_EPOCH_EXECUTABLE);
-
-                bool wowExists = File.Exists(wowExePath);
-                bool projectEpochExists = File.Exists(projectEpochExePath);
-
-                LogDebug($"{Constants.WOW_EXECUTABLE} exists: {wowExists} at {wowExePath}");
-                LogDebug($"{Constants.PROJECT_EPOCH_EXECUTABLE} exists: {projectEpochExists} at {projectEpochExePath}");
-
-                return wowExists && projectEpochExists;
-            }
-            catch (Exception ex)
-            {
-                LogError($"Error checking required files: {ex.Message}");
-                return false;
             }
         }
 
