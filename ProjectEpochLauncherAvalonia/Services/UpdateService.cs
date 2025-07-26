@@ -17,7 +17,7 @@ namespace ProjectEpochLauncherAvalonia.Services
         {
             var client = new HttpClient();
             client.Timeout = TimeSpan.FromMinutes(10); // Set timeout during creation
-            client.DefaultRequestHeaders.Add("User-Agent", "ProjectEpochLauncherAvalonia/1.0");
+            client.DefaultRequestHeaders.Add("User-Agent", $"{Constants.APPLICATION_NAME}/1.0");
             return client;
         });
 
@@ -121,14 +121,13 @@ namespace ProjectEpochLauncherAvalonia.Services
         {
             try
             {
-                const string manifestUrl = "https://updater.project-epoch.net/api/v2/manifest";
-                LogDebug($"Fetching manifest from: {manifestUrl}");
+                LogDebug($"Fetching manifest from: {Constants.MANIFEST_URL}");
 
                 // Create a timeout token for just the manifest request (30 seconds)
                 using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                 using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-                var response = await HttpClient.GetAsync(manifestUrl, combinedCts.Token);
+                var response = await HttpClient.GetAsync(Constants.MANIFEST_URL, combinedCts.Token);
                 response.EnsureSuccessStatusCode();
 
                 var jsonContent = await response.Content.ReadAsStringAsync(combinedCts.Token);
@@ -290,7 +289,7 @@ namespace ProjectEpochLauncherAvalonia.Services
                     TotalBytes = totalBytes,
                     OverallProgress = 100,
                     FileProgress = 100,
-                    Status = "Download complete!"
+                    Status = $"{Constants.DOWNLOAD_COMPLETE_BUTTON_TEXT}!"
                 });
 
                 LogDebug($"Download completed successfully. {filesDownloaded} files, {downloadedBytes} bytes");

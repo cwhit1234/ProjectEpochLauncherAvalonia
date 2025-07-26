@@ -101,8 +101,8 @@ namespace ProjectEpochLauncherAvalonia
                     return false;
                 }
 
-                var wowExePath = Path.Combine(installPath, "WoW.exe");
-                var projectEpochExePath = Path.Combine(installPath, "Project-Epoch.exe");
+                var wowExePath = Path.Combine(installPath, Constants.WOW_EXECUTABLE);
+                var projectEpochExePath = Path.Combine(installPath, Constants.PROJECT_EPOCH_EXECUTABLE);
 
                 return File.Exists(wowExePath) && File.Exists(projectEpochExePath);
             }
