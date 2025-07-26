@@ -14,8 +14,8 @@ A cross-platform launcher for Project Epoch, a World of Warcraft private server 
 ### Windows
 
 1. **Download the Latest Release**
-   - Go to the [Releases page](https://github.com/Project-Epoch/ProjectEpochLauncherAvalonia/releases)
-   - Download `ProjectEpochLauncher-Windows-x64.zip`
+   - Go to the [Releases page](https://github.com/cwhit1234/ProjectEpochLauncherAvalonia/releases)
+   - Download `project-epoch-launcher-windows-vX.X.X.zip`
 
 2. **Install**
    ```
@@ -33,15 +33,14 @@ A cross-platform launcher for Project Epoch, a World of Warcraft private server 
 
 1. **Download the Latest Release**
    - Go to the [Releases page](https://github.com/Project-Epoch/ProjectEpochLauncherAvalonia/releases)
-   - Download `ProjectEpochLauncher-macOS-x64.dmg`
+   - Download `project-epoch-launcher-macos-vX.X.X.zip`
 
 2. **Install**
    ```
-   1. Open the downloaded DMG file
-   2. Drag "Project Epoch Launcher" to your Applications folder
-   3. Launch the app from Applications
-   4. If prompted about security, go to System Preferences > Security & Privacy and click "Open Anyway"
-   5. Follow the setup wizard to complete installation
+   1. Extract the ZIP file to your Applications folder
+   2. Launch the app from Applications
+   3. If prompted about security, go to System Preferences > Security & Privacy and click "Open Anyway"
+   4. Follow the setup wizard to complete installation
    ```
 
 **Note**: Game launching is not supported on macOS, but you can use the launcher to download and manage game files.
@@ -50,26 +49,14 @@ A cross-platform launcher for Project Epoch, a World of Warcraft private server 
 
 1. **Download the Latest Release**
    - Go to the [Releases page](https://github.com/Project-Epoch/ProjectEpochLauncherAvalonia/releases)
-   - Download `ProjectEpochLauncher-Linux-x64.tar.gz`
+   - Download `project-epoch-launcher-linux-vX.X.X.zip`
 
 2. **Install**
    ```bash
-   # Extract the archive
-   tar -xzf ProjectEpochLauncher-Linux-x64.tar.gz
-   
-   # Move to desired location
-   sudo mv ProjectEpochLauncherAvalonia /opt/project-epoch-launcher/
-   
-   # Make executable
-   chmod +x /opt/project-epoch-launcher/ProjectEpochLauncherAvalonia
-   
-   # Create symlink for easy access (optional)
-   sudo ln -s /opt/project-epoch-launcher/ProjectEpochLauncherAvalonia /usr/local/bin/project-epoch-launcher
-   
-   # Run the launcher
-   project-epoch-launcher
-   # OR
-   /opt/project-epoch-launcher/ProjectEpochLauncherAvalonia
+   1. Extract the archive   
+   2. Move to desired location
+   3. Make executable
+   4. Run the launcher
    ```
 
 **Note**: Game launching is not supported on Linux, but you can use the launcher to download and manage game files.
