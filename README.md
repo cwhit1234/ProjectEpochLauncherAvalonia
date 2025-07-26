@@ -1,6 +1,4 @@
-# Project Epoch Launcher
-
-![Project Epoch Logo](https://www.project-epoch.net/assets/logo.png)
+# Project Epoch Avalonia Launcher
 
 A cross-platform launcher for Project Epoch, a World of Warcraft private server that brings back the classic experience with modern improvements.
 
