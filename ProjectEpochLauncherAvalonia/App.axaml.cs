@@ -34,74 +34,119 @@ namespace ProjectEpochLauncherAvalonia
                     desktop.MainWindow = setupWizard;
 
                     // When setup wizard closes, check if setup was completed
-                    setupWizard.Closed += async (s, e) =>
+                    setupWizard.Closed += (s, e) =>
                     {
-                        try
+                        System.Diagnostics.Debug.WriteLine("[APP] Setup wizard closed event triggered");
+
+                        // IMPORTANT: Don't let the app shutdown when setup wizard closes
+                        desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnExplicitShutdown;
+                        System.Diagnostics.Debug.WriteLine("[APP] Set shutdown mode to OnExplicitShutdown");
+
+                        // Use a timer instead of Task.Run to avoid disposal issues
+                        var timer = new System.Timers.Timer(500); // 500ms delay
+                        timer.Elapsed += (timerSender, timerArgs) =>
                         {
-                            System.Diagnostics.Debug.WriteLine("[APP] Setup wizard closed event triggered");
+                            timer.Stop();
+                            timer.Dispose();
 
-                            // Add a small delay to ensure all operations have completed
-                            await System.Threading.Tasks.Task.Delay(100);
-
-                            // Re-check setup completion and first launch status
-                            var isSetupComplete = configManager.SetupCompleted;
-                            var isStillFirstLaunch = IsFirstLaunch(configManager);
-
-                            System.Diagnostics.Debug.WriteLine($"[APP] Setup wizard closed - SetupCompleted: {isSetupComplete}, IsFirstLaunch: {isStillFirstLaunch}");
-
-                            if (isSetupComplete && !isStillFirstLaunch)
-                            {
-                                // Setup completed successfully - show main window
-                                System.Diagnostics.Debug.WriteLine("[APP] Opening main window after successful setup");
-
-                                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    var mainWindow = new MainWindow
-                                    {
-                                        DataContext = new MainWindowViewModel(),
-                                    };
-
-                                    desktop.MainWindow = mainWindow;
-                                    mainWindow.Show();
-
-                                    System.Diagnostics.Debug.WriteLine("[APP] Main window created and shown");
-                                });
-                            }
-                            else
-                            {
-                                // Setup was cancelled or not completed properly - exit application
-                                System.Diagnostics.Debug.WriteLine("[APP] Shutting down application - setup not completed");
-
-                                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    desktop.Shutdown();
-                                });
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"[APP] Error in setup wizard closed handler: {ex.Message}");
-
-                            // Fallback: try to show main window anyway
                             try
                             {
-                                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-                                {
-                                    var mainWindow = new MainWindow
-                                    {
-                                        DataContext = new MainWindowViewModel(),
-                                    };
+                                System.Diagnostics.Debug.WriteLine("[APP] Timer elapsed - checking setup status");
 
-                                    desktop.MainWindow = mainWindow;
-                                    mainWindow.Show();
+                                // Re-check setup completion status
+                                var isSetupComplete = configManager.SetupCompleted;
+                                var isStillFirstLaunch = IsFirstLaunch(configManager);
+
+                                System.Diagnostics.Debug.WriteLine($"[APP] Setup check - SetupCompleted: {isSetupComplete}, IsFirstLaunch: {isStillFirstLaunch}");
+
+                                if (isSetupComplete && !isStillFirstLaunch)
+                                {
+                                    System.Diagnostics.Debug.WriteLine("[APP] Setup conditions met - attempting to create main window");
+
+                                    // Setup completed - create main window on UI thread
+                                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("[APP] UI thread callback started - Creating main window after successful setup");
+
+                                        try
+                                        {
+                                            System.Diagnostics.Debug.WriteLine("[APP] About to create MainWindow instance");
+                                            var mainWindow = new MainWindow
+                                            {
+                                                DataContext = new MainWindowViewModel(),
+                                            };
+
+                                            System.Diagnostics.Debug.WriteLine("[APP] Main window instance created successfully");
+
+                                            desktop.MainWindow = mainWindow;
+                                            System.Diagnostics.Debug.WriteLine("[APP] Main window set as desktop.MainWindow");
+
+                                            // Reset shutdown mode to normal now that we have a main window
+                                            desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                                            System.Diagnostics.Debug.WriteLine("[APP] Reset shutdown mode to OnMainWindowClose");
+
+                                            mainWindow.Show();
+                                            System.Diagnostics.Debug.WriteLine("[APP] Main window Show() called");
+
+                                            mainWindow.Activate();
+                                            System.Diagnostics.Debug.WriteLine("[APP] Main window Activate() called");
+
+                                            System.Diagnostics.Debug.WriteLine("[APP] Main window creation completed successfully");
+                                        }
+                                        catch (Exception mainWindowEx)
+                                        {
+                                            System.Diagnostics.Debug.WriteLine($"[APP] Error creating main window: {mainWindowEx.Message}");
+                                            System.Diagnostics.Debug.WriteLine($"[APP] Main window error stack trace: {mainWindowEx.StackTrace}");
+
+                                            // If main window creation fails, shutdown explicitly
+                                            desktop.Shutdown();
+                                        }
+                                    });
+                                }
+                                else
+                                {
+                                    // Setup was cancelled or not completed - exit
+                                    System.Diagnostics.Debug.WriteLine($"[APP] Setup conditions NOT met - shutting down. SetupCompleted: {isSetupComplete}, IsFirstLaunch: {isStillFirstLaunch}");
+                                    Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                    {
+                                        desktop.Shutdown();
+                                    });
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[APP] Error in timer callback: {ex.Message}");
+                                System.Diagnostics.Debug.WriteLine($"[APP] Error stack trace: {ex.StackTrace}");
+
+                                // Try to create main window anyway as fallback
+                                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                                {
+                                    try
+                                    {
+                                        System.Diagnostics.Debug.WriteLine("[APP] Attempting fallback main window creation");
+                                        var mainWindow = new MainWindow
+                                        {
+                                            DataContext = new MainWindowViewModel(),
+                                        };
+
+                                        desktop.MainWindow = mainWindow;
+                                        desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
+                                        mainWindow.Show();
+                                        mainWindow.Activate();
+
+                                        System.Diagnostics.Debug.WriteLine("[APP] Fallback main window created");
+                                    }
+                                    catch (Exception fallbackEx)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"[APP] Fallback failed: {fallbackEx.Message}");
+                                        desktop.Shutdown();
+                                    }
                                 });
                             }
-                            catch (Exception fallbackEx)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"[APP] Fallback failed: {fallbackEx.Message}");
-                                desktop.Shutdown();
-                            }
-                        }
+                        };
+
+                        timer.Start();
+                        System.Diagnostics.Debug.WriteLine("[APP] Timer started for setup completion check");
                     };
                 }
                 else
