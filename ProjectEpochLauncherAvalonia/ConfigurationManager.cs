@@ -8,7 +8,6 @@ namespace ProjectEpochLauncherAvalonia
 {
     public class ConfigurationManager
     {
-        private static readonly string ConfigFileName = "launcher-config.json";
         private readonly string _configFilePath;
         private LauncherConfiguration _configuration;
 
@@ -20,7 +19,7 @@ namespace ProjectEpochLauncherAvalonia
             // Ensure directory exists
             Directory.CreateDirectory(configDirectory);
 
-            _configFilePath = Path.Combine(configDirectory, ConfigFileName);
+            _configFilePath = Path.Combine(configDirectory, Constants.CONFIG_FILE_NAME);
             _configuration = LoadConfiguration();
         }
 
@@ -62,14 +61,14 @@ namespace ProjectEpochLauncherAvalonia
                 // Windows: %LocalAppData%\ProjectEpochLauncherAvalonia
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "ProjectEpochLauncherAvalonia"
+                    Constants.APPLICATION_NAME
                 );
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 // macOS: ~/Library/Application Support/ProjectEpochLauncherAvalonia
                 var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                return Path.Combine(home, "Library", "Application Support", "ProjectEpochLauncherAvalonia");
+                return Path.Combine(home, "Library", "Application Support", Constants.APPLICATION_NAME);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -80,14 +79,14 @@ namespace ProjectEpochLauncherAvalonia
                     var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
                     configHome = Path.Combine(home, ".config");
                 }
-                return Path.Combine(configHome, "ProjectEpochLauncherAvalonia");
+                return Path.Combine(configHome, Constants.APPLICATION_NAME);
             }
             else
             {
                 // Fallback: Use user profile directory
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ".ProjectEpochLauncherAvalonia"
+                    $".{Constants.APPLICATION_NAME}"
                 );
             }
         }
@@ -99,23 +98,23 @@ namespace ProjectEpochLauncherAvalonia
             {
                 return Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                    "Project Epoch"
+                    Constants.PROJECT_EPOCH_DISPLAY_NAME
                 );
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                return Path.Combine("/Applications", "Project Epoch");
+                return Path.Combine("/Applications", Constants.PROJECT_EPOCH_DISPLAY_NAME);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                return Path.Combine(home, "Games", "ProjectEpoch");
+                return Path.Combine(home, "Games", Constants.PROJECT_EPOCH_DISPLAY_NAME_ALTERNATIVE);
             }
             else
             {
                 // Fallback
                 var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-                return Path.Combine(home, "ProjectEpoch");
+                return Path.Combine(home, Constants.PROJECT_EPOCH_DISPLAY_NAME_ALTERNATIVE);
             }
         }
 

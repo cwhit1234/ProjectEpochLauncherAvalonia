@@ -142,7 +142,7 @@ namespace ProjectEpochLauncherAvalonia
             {
                 var dialog = new Window
                 {
-                    Title = "Download in Progress",
+                    Title = Constants.DOWNLOAD_IN_PROGRESS_TITLE,
                     Width = 450,
                     Height = 220,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -172,10 +172,10 @@ namespace ProjectEpochLauncherAvalonia
 
                 var continueButton = new Button
                 {
-                    Content = "Continue Download",
+                    Content = Constants.CONTINUE_DOWNLOAD_BUTTON_TEXT,
                     Width = 140,
                     Height = 35,
-                    Background = Avalonia.Media.Brush.Parse("#4CAF50"),
+                    Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     Foreground = Avalonia.Media.Brushes.White,
                     CornerRadius = new Avalonia.CornerRadius(6),
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -184,10 +184,10 @@ namespace ProjectEpochLauncherAvalonia
 
                 var cancelButton = new Button
                 {
-                    Content = "Cancel Download",
+                    Content = Constants.CANCEL_DOWNLOAD_BUTTON_TEXT,
                     Width = 140,
                     Height = 35,
-                    Background = Avalonia.Media.Brush.Parse("#F44336"),
+                    Background = Avalonia.Media.Brush.Parse(Constants.COLOR_CANCEL_RED),
                     Foreground = Avalonia.Media.Brushes.White,
                     CornerRadius = new Avalonia.CornerRadius(6),
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -240,7 +240,7 @@ namespace ProjectEpochLauncherAvalonia
                 // Create a simple message box dialog
                 var dialog = new Window
                 {
-                    Title = "Exit Setup",
+                    Title = Constants.EXIT_SETUP_TITLE,
                     Width = 400,
                     Height = 200,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -270,10 +270,10 @@ namespace ProjectEpochLauncherAvalonia
 
                 var cancelButton = new Button
                 {
-                    Content = "Continue Setup",
+                    Content = Constants.CONTINUE_SETUP_BUTTON_TEXT,
                     Width = 120,
                     Height = 35,
-                    Background = Avalonia.Media.Brush.Parse("#4CAF50"),
+                    Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     Foreground = Avalonia.Media.Brushes.White,
                     CornerRadius = new Avalonia.CornerRadius(6),
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -282,10 +282,10 @@ namespace ProjectEpochLauncherAvalonia
 
                 var exitButton = new Button
                 {
-                    Content = "Exit",
+                    Content = Constants.EXIT_BUTTON_TEXT,
                     Width = 120,
                     Height = 35,
-                    Background = Avalonia.Media.Brush.Parse("#F44336"),
+                    Background = Avalonia.Media.Brush.Parse(Constants.COLOR_CANCEL_RED),
                     Foreground = Avalonia.Media.Brushes.White,
                     CornerRadius = new Avalonia.CornerRadius(6),
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center,
@@ -386,7 +386,7 @@ namespace ProjectEpochLauncherAvalonia
                 Text = "Choose Installation Location",
                 FontSize = 20,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brush.Parse("#F0E68C"),
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_GOLD),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Avalonia.Thickness(0, 0, 0, 10)
             };
@@ -434,11 +434,11 @@ namespace ProjectEpochLauncherAvalonia
 
             var browseButton = new Button
             {
-                Content = "Browse...",
+                Content = Constants.BROWSE_BUTTON_TEXT,
                 Width = 100,
                 Height = 35,
                 Margin = new Avalonia.Thickness(10, 0, 0, 0),
-                Background = Avalonia.Media.Brush.Parse("#4CAF50"),
+                Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                 Foreground = Avalonia.Media.Brushes.White,
                 CornerRadius = new Avalonia.CornerRadius(4),
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
@@ -446,8 +446,8 @@ namespace ProjectEpochLauncherAvalonia
                 VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
-            browseButton.PointerEntered += (s, e) => browseButton.Background = Avalonia.Media.Brush.Parse("#45A049");
-            browseButton.PointerExited += (s, e) => browseButton.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+            browseButton.PointerEntered += (s, e) => browseButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN_HOVER);
+            browseButton.PointerExited += (s, e) => browseButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
             browseButton.Click += async (s, e) => await OnBrowseInstallPath(pathTextBox);
 
             Grid.SetColumn(pathTextBox, 0);
@@ -515,7 +515,7 @@ namespace ProjectEpochLauncherAvalonia
                 Text = "Downloading Game Files",
                 FontSize = 20,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brush.Parse("#F0E68C"),
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_GOLD),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 Margin = new Avalonia.Thickness(0, 0, 0, 20)
             };
@@ -552,7 +552,7 @@ namespace ProjectEpochLauncherAvalonia
                 Maximum = 100,
                 Value = 0,
                 Background = Avalonia.Media.Brush.Parse("#33FFFFFF"),
-                Foreground = Avalonia.Media.Brush.Parse("#4CAF50")
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN)
             };
 
             // Overall progress
@@ -570,7 +570,7 @@ namespace ProjectEpochLauncherAvalonia
                 Maximum = 100,
                 Value = 0,
                 Background = Avalonia.Media.Brush.Parse("#33FFFFFF"),
-                Foreground = Avalonia.Media.Brush.Parse("#1E88E5")
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_BLUE)
             };
 
             progressContainer.Children.Add(fileProgressLabel);
@@ -699,7 +699,7 @@ namespace ProjectEpochLauncherAvalonia
                 Text = "Setup Complete!",
                 FontSize = 24,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brush.Parse("#4CAF50"),
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center
             };
 
@@ -728,18 +728,18 @@ namespace ProjectEpochLauncherAvalonia
             switch (_currentStep)
             {
                 case 0: // Welcome
-                    _nextButton.Content = "Get Started";
+                    _nextButton.Content = Constants.GET_STARTED_BUTTON_TEXT;
                     _nextButton.IsEnabled = true;
                     break;
                 case 1: // Install Path
-                    _nextButton.Content = "Install";
+                    _nextButton.Content = Constants.INSTALL_BUTTON_TEXT;
                     _nextButton.IsEnabled = !string.IsNullOrEmpty(_selectedInstallPath);
                     break;
                 case 2: // Download
                     _nextButton.IsVisible = false;
                     break;
                 case 3: // Complete
-                    _nextButton.Content = "Finish";
+                    _nextButton.Content = Constants.FINISH_BUTTON_TEXT;
                     _nextButton.IsEnabled = true;
                     break;
             }

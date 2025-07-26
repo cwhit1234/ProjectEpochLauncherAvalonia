@@ -24,9 +24,6 @@ namespace ProjectEpochLauncherAvalonia
         private UpdateService _updateService;
         private CancellationTokenSource? _updateCheckCancellation;
 
-        private const string DonateUrl = "https://github.com/sponsors/Project-Epoch";
-        private const string DiscordUrl = "https://www.project-epoch.net/community/discord";
-
         public MainWindow()
         {
             InitializeComponent();
@@ -99,8 +96,8 @@ namespace ProjectEpochLauncherAvalonia
         {
             try
             {
-                LogDebug($"Opening donate URL: {DonateUrl}");
-                OpenUrl(DonateUrl);
+                LogDebug($"Opening donate URL: {Constants.DONATE_URL}");
+                OpenUrl(Constants.DONATE_URL);
             }
             catch (Exception ex)
             {
@@ -112,8 +109,8 @@ namespace ProjectEpochLauncherAvalonia
         {
             try
             {
-                LogDebug($"Opening Discord URL: {DiscordUrl}");
-                OpenUrl(DiscordUrl);
+                LogDebug($"Opening Discord URL: {Constants.DISCORD_URL}");
+                OpenUrl(Constants.DISCORD_URL);
             }
             catch (Exception ex)
             {
@@ -158,7 +155,7 @@ namespace ProjectEpochLauncherAvalonia
                 Text = "Welcome to Project Epoch",
                 FontSize = 32,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brush.Parse("#F0E68C"),
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_GOLD),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                 VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
@@ -184,12 +181,16 @@ namespace ProjectEpochLauncherAvalonia
             string statusMessage = "";
             bool isErrorMessage = false;
 
-            if (hasValidPath)
+            // Always show check updates button when we have a valid path OR on non-Windows platforms
+            if (hasValidPath || !PlatformSupport.SupportsGameLaunching)
             {
-                // Always show check updates button when we have a valid path
                 var checkUpdatesButton = CreateCheckUpdatesButton();
                 buttonPanel.Children.Add(checkUpdatesButton);
+            }
 
+            // Only show Play button on Windows with valid setup
+            if (PlatformSupport.SupportsGameLaunching && hasValidPath)
+            {
                 // Only show Play button if required files exist
                 var filesPresent = AreRequiredFilesPresent();
                 LogDebug($"Required files present: {filesPresent}");
@@ -210,7 +211,14 @@ namespace ProjectEpochLauncherAvalonia
                     LogDebug("Game files missing - will show status message");
                 }
             }
-            else
+            else if (!PlatformSupport.SupportsGameLaunching)
+            {
+                // Show platform limitation message
+                statusMessage = PlatformSupport.GetPlatformLimitationMessage();
+                isErrorMessage = false;
+                LogDebug($"Platform doesn't support game launching - showing limitation message for {PlatformSupport.GetPlatformName()}");
+            }
+            else if (!hasValidPath)
             {
                 // Set error message about missing install path
                 statusMessage = "No install path configured.\nPlease go to Settings to select an installation location.";
@@ -218,7 +226,11 @@ namespace ProjectEpochLauncherAvalonia
                 LogDebug("No valid install path - will show error message");
             }
 
-            homeContent.Children.Add(buttonPanel);
+            // Only add button panel if it has children
+            if (buttonPanel.Children.Count > 0)
+            {
+                homeContent.Children.Add(buttonPanel);
+            }
 
             // Add status message if needed
             if (!string.IsNullOrEmpty(statusMessage))
@@ -229,8 +241,8 @@ namespace ProjectEpochLauncherAvalonia
                     Text = statusMessage,
                     FontSize = 14,
                     Foreground = isErrorMessage ?
-                        Avalonia.Media.Brush.Parse("#F44336") :
-                        Avalonia.Media.Brush.Parse("#4CAF50"),
+                        Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED) :
+                        Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
                     TextAlignment = Avalonia.Media.TextAlignment.Center,
@@ -258,7 +270,7 @@ namespace ProjectEpochLauncherAvalonia
                 FontSize = 14,
                 FontWeight = Avalonia.Media.FontWeight.Normal,
                 Foreground = Avalonia.Media.Brushes.White,
-                Background = Avalonia.Media.Brush.Parse("#4CAF50"),
+                Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                 Padding = new Avalonia.Thickness(40, 15),
                 CornerRadius = new Avalonia.CornerRadius(8),
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
@@ -266,8 +278,8 @@ namespace ProjectEpochLauncherAvalonia
                 VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
-            checkUpdatesButton.PointerEntered += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse("#45A049");
-            checkUpdatesButton.PointerExited += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+            checkUpdatesButton.PointerEntered += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN_HOVER);
+            checkUpdatesButton.PointerExited += (s, e) => checkUpdatesButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
             checkUpdatesButton.Click += OnCheckUpdatesButtonClick;
 
             return checkUpdatesButton;
@@ -281,7 +293,7 @@ namespace ProjectEpochLauncherAvalonia
                 FontSize = 18,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
                 Foreground = Avalonia.Media.Brushes.White,
-                Background = Avalonia.Media.Brush.Parse("#1E88E5"),
+                Background = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_BLUE),
                 Padding = new Avalonia.Thickness(40, 15),
                 CornerRadius = new Avalonia.CornerRadius(8),
                 Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
@@ -289,8 +301,8 @@ namespace ProjectEpochLauncherAvalonia
                 VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center
             };
 
-            playButton.PointerEntered += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse("#1976D2");
-            playButton.PointerExited += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse("#1E88E5");
+            playButton.PointerEntered += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_BLUE_HOVER);
+            playButton.PointerExited += (s, e) => playButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_BLUE);
             playButton.Click += OnPlayButtonClick;
 
             return playButton;
@@ -310,7 +322,7 @@ namespace ProjectEpochLauncherAvalonia
                 _updateCheckCancellation = new CancellationTokenSource();
 
                 // Update button state
-                button.Content = "Checking...";
+                button.Content = Constants.CHECKING_BUTTON_TEXT;
                 button.IsEnabled = false;
 
                 var result = await _updateService.CheckForUpdatesAsync(_updateCheckCancellation.Token);
@@ -324,7 +336,7 @@ namespace ProjectEpochLauncherAvalonia
 
                         // Update button to show download option
                         button.Content = $"Download Updates ({sizeText})";
-                        button.Background = Avalonia.Media.Brush.Parse("#FF9800");
+                        button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_WARNING_ORANGE);
 
                         // Change button click handler to download
                         button.Click -= OnCheckUpdatesButtonClick;
@@ -334,7 +346,7 @@ namespace ProjectEpochLauncherAvalonia
                     {
                         LogDebug("No updates available");
                         button.Content = Constants.UP_TO_DATE_BUTTON_TEXT;
-                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
 
                         // Reset button after 3 seconds
                         _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -342,7 +354,7 @@ namespace ProjectEpochLauncherAvalonia
                             if (button.Content?.ToString() == Constants.UP_TO_DATE_BUTTON_TEXT)
                             {
                                 button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                                button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                                button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
                             }
                         }));
                     }
@@ -350,16 +362,16 @@ namespace ProjectEpochLauncherAvalonia
                 else
                 {
                     LogError($"Update check failed: {result.ErrorMessage}");
-                    button.Content = "Check Failed";
-                    button.Background = Avalonia.Media.Brush.Parse("#F44336");
+                    button.Content = Constants.CHECK_FAILED_BUTTON_TEXT;
+                    button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED);
 
                     // Reset button after 3 seconds
                     _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                     {
-                        if (button.Content?.ToString() == "Check Failed")
+                        if (button.Content?.ToString() == Constants.CHECK_FAILED_BUTTON_TEXT)
                         {
                             button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                            button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                            button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
                         }
                     }));
                 }
@@ -368,13 +380,13 @@ namespace ProjectEpochLauncherAvalonia
             {
                 LogDebug("Update check was cancelled");
                 button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
             }
             catch (Exception ex)
             {
                 LogError($"Update check error: {ex.Message}");
-                button.Content = "Check Failed";
-                button.Background = Avalonia.Media.Brush.Parse("#F44336");
+                button.Content = Constants.CHECK_FAILED_BUTTON_TEXT;
+                button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED);
             }
             finally
             {
@@ -396,7 +408,7 @@ namespace ProjectEpochLauncherAvalonia
                 _updateCheckCancellation = new CancellationTokenSource();
 
                 // Update button state
-                button.Content = "Downloading...";
+                button.Content = Constants.DOWNLOADING_BUTTON_TEXT;
                 button.IsEnabled = false;
                 button.Background = Avalonia.Media.Brush.Parse("#2196F3");
 
@@ -426,8 +438,8 @@ namespace ProjectEpochLauncherAvalonia
                     progressDialog.SetCompleted(true, $"Download complete!\n\n{downloadResult.FilesDownloaded} files downloaded\n{FormatFileSize(downloadResult.TotalBytesDownloaded)} total");
 
                     // Update button state
-                    button.Content = "Download Complete";
-                    button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                    button.Content = Constants.DOWNLOAD_COMPLETE_BUTTON_TEXT;
+                    button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
 
                     // Refresh the home view to show play button if files are now present
                     NavigateToHome();
@@ -441,7 +453,7 @@ namespace ProjectEpochLauncherAvalonia
 
                     // Update button state
                     button.Content = Constants.DOWNLOAD_FAILED_BUTTON_TEXT;
-                    button.Background = Avalonia.Media.Brush.Parse("#F44336");
+                    button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED);
 
                     // Reset button after 5 seconds
                     _ = Task.Delay(5000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -449,7 +461,7 @@ namespace ProjectEpochLauncherAvalonia
                         if (button.Content?.ToString() == Constants.DOWNLOAD_FAILED_BUTTON_TEXT)
                         {
                             button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                            button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                            button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
                             button.Click -= OnCheckUpdatesButtonClick;
                             button.Click += OnCheckUpdatesButtonClick;
                         }
@@ -462,7 +474,7 @@ namespace ProjectEpochLauncherAvalonia
 
                 // Update button state
                 button.Content = Constants.DOWNLOAD_CANCELLED_BUTTON_TEXT;
-                button.Background = Avalonia.Media.Brush.Parse("#FF9800");
+                button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_WARNING_ORANGE);
 
                 // Reset button after 3 seconds
                 _ = Task.Delay(3000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -470,7 +482,7 @@ namespace ProjectEpochLauncherAvalonia
                     if (button.Content?.ToString() == Constants.DOWNLOAD_CANCELLED_BUTTON_TEXT)
                     {
                         button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
                         button.Click -= OnCheckUpdatesButtonClick;
                         button.Click += OnCheckUpdatesButtonClick;
                     }
@@ -482,7 +494,7 @@ namespace ProjectEpochLauncherAvalonia
 
                 // Update button state
                 button.Content = Constants.DOWNLOAD_ERROR_BUTTON_TEXT;
-                button.Background = Avalonia.Media.Brush.Parse("#F44336");
+                button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED);
 
                 // Reset button after 5 seconds
                 _ = Task.Delay(5000).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
@@ -490,7 +502,7 @@ namespace ProjectEpochLauncherAvalonia
                     if (button.Content?.ToString() == Constants.DOWNLOAD_ERROR_BUTTON_TEXT)
                     {
                         button.Content = Constants.CHECK_FOR_UPDATES_BUTTON_TEXT;
-                        button.Background = Avalonia.Media.Brush.Parse("#4CAF50");
+                        button.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN);
                         button.Click -= OnCheckUpdatesButtonClick;
                         button.Click += OnCheckUpdatesButtonClick;
                     }
@@ -530,10 +542,20 @@ namespace ProjectEpochLauncherAvalonia
             }
         }
 
-        private async void LaunchGame(Button? playButton)
+
+        private void LaunchGame(Button? playButton)
         {
             try
             {
+                // First check if platform supports game launching
+                if (!PlatformSupport.SupportsGameLaunching)
+                {
+                    LogError($"Game launching not supported on {PlatformSupport.GetPlatformName()}");
+                    ShowGameLaunchError($"Game launching is not supported on {PlatformSupport.GetPlatformName()}. The game requires Windows to run.");
+                    ResetPlayButton(playButton);
+                    return;
+                }
+
                 var installPath = _configManager.InstallPath;
                 if (string.IsNullOrEmpty(installPath) || !Directory.Exists(installPath))
                 {
@@ -542,7 +564,7 @@ namespace ProjectEpochLauncherAvalonia
                     return;
                 }
 
-                var gameExePath = Path.Combine(installPath, "Project-Epoch.exe");
+                var gameExePath = Path.Combine(installPath, Constants.PROJECT_EPOCH_EXECUTABLE);
                 if (!File.Exists(gameExePath))
                 {
                     LogError($"Game executable not found: {gameExePath}");
@@ -555,7 +577,7 @@ namespace ProjectEpochLauncherAvalonia
                 // Update button state to show launching
                 if (playButton != null)
                 {
-                    playButton.Content = "Launching...";
+                    playButton.Content = Constants.LAUNCHING_BUTTON_TEXT;
                     playButton.IsEnabled = false;
                 }
 
@@ -689,7 +711,7 @@ namespace ProjectEpochLauncherAvalonia
                             {
                                 foreach (var button in buttonPanel.Children)
                                 {
-                                    if (button is Button btn && btn.Content?.ToString() == "Launching...")
+                                    if (button is Button btn && btn.Content?.ToString() == Constants.LAUNCHING_BUTTON_TEXT)
                                     {
                                         btn.Content = Constants.PLAY_BUTTON_TEXT;
                                         btn.IsEnabled = true;
@@ -758,8 +780,8 @@ namespace ProjectEpochLauncherAvalonia
                     Text = message,
                     FontSize = 14,
                     Foreground = isError ?
-                        Avalonia.Media.Brush.Parse("#F44336") :
-                        Avalonia.Media.Brush.Parse("#4CAF50"),
+                        Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED) :
+                        Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
                     VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
                     TextAlignment = Avalonia.Media.TextAlignment.Center,
@@ -820,10 +842,10 @@ namespace ProjectEpochLauncherAvalonia
             // Title
             var titleText = new TextBlock
             {
-                Text = "Settings",
+                Text = Constants.SETTINGS_NAVIGATION,
                 FontSize = 32,
                 FontWeight = Avalonia.Media.FontWeight.Bold,
-                Foreground = Avalonia.Media.Brush.Parse("#F0E68C"),
+                Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_GOLD),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
                 Margin = new Avalonia.Thickness(0, 0, 0, 30)
             };
@@ -873,7 +895,7 @@ namespace ProjectEpochLauncherAvalonia
             // Add hover effect to button
             changePathButton.PointerEntered += (s, e) =>
             {
-                changePathButton.Background = Avalonia.Media.Brush.Parse("#666666");
+                changePathButton.Background = Avalonia.Media.Brush.Parse(Constants.COLOR_SECONDARY_GRAY);
             };
 
             changePathButton.PointerExited += (s, e) =>
@@ -970,14 +992,14 @@ namespace ProjectEpochLauncherAvalonia
                     return false;
                 }
 
-                var wowExePath = Path.Combine(installPath, "WoW.exe");
-                var projectEpochExePath = Path.Combine(installPath, "Project-Epoch.exe");
+                var wowExePath = Path.Combine(installPath, Constants.WOW_EXECUTABLE);
+                var projectEpochExePath = Path.Combine(installPath, Constants.PROJECT_EPOCH_EXECUTABLE);
 
                 bool wowExists = File.Exists(wowExePath);
                 bool projectEpochExists = File.Exists(projectEpochExePath);
 
-                LogDebug($"WoW.exe exists: {wowExists} at {wowExePath}");
-                LogDebug($"Project-Epoch.exe exists: {projectEpochExists} at {projectEpochExePath}");
+                LogDebug($"{Constants.WOW_EXECUTABLE} exists: {wowExists} at {wowExePath}");
+                LogDebug($"{Constants.PROJECT_EPOCH_EXECUTABLE} exists: {projectEpochExists} at {projectEpochExePath}");
 
                 return wowExists && projectEpochExists;
             }

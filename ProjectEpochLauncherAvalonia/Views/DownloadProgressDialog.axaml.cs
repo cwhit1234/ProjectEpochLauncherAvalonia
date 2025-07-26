@@ -79,10 +79,10 @@ namespace ProjectEpochLauncherAvalonia
 
             if (_cancelButton != null)
             {
-                _cancelButton.Content = "Close";
+                _cancelButton.Content = Constants.CLOSE_BUTTON_TEXT;
                 _cancelButton.Background = success ?
-                    Avalonia.Media.Brush.Parse("#4CAF50") :
-                    Avalonia.Media.Brush.Parse("#F44336");
+                    Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN) :
+                    Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED);
                 _cancelButton.HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Center;
                 _cancelButton.VerticalContentAlignment = Avalonia.Layout.VerticalAlignment.Center;
             }
@@ -99,7 +99,7 @@ namespace ProjectEpochLauncherAvalonia
 
         private void OnCancelClick(object? sender, RoutedEventArgs e)
         {
-            if (_cancelButton?.Content?.ToString() == "Close")
+            if (_cancelButton?.Content?.ToString() == Constants.CLOSE_BUTTON_TEXT)
             {
                 Close();
                 return;
@@ -110,7 +110,7 @@ namespace ProjectEpochLauncherAvalonia
 
             if (_cancelButton != null)
             {
-                _cancelButton.Content = "Cancelling...";
+                _cancelButton.Content = Constants.CANCELLING_BUTTON_TEXT;
                 _cancelButton.IsEnabled = false;
             }
 
