@@ -21,7 +21,7 @@ namespace ProjectEpochLauncherAvalonia
         private UpdateService _updateService;
         private CancellationTokenSource? _cancellationTokenSource;
 
-        private int _currentStep = 0;
+        private int _currentStep = (int)SetupStep.WelcomeStep;
         private string _selectedInstallPath = string.Empty;
         private bool _forceClose = false; // Flag to bypass confirmation dialog
 
@@ -100,7 +100,7 @@ namespace ProjectEpochLauncherAvalonia
         protected override void OnClosing(WindowClosingEventArgs e)
         {
             // If we're forcing close or setup is completed, allow it
-            if (_forceClose || _configManager.SetupCompleted || _currentStep >= 3)
+            if (_forceClose || _configManager.SetupCompleted || _currentStep >= (int)SetupStep.CompleteStep)
             {
                 // Make sure to cancel any ongoing operations
                 try
@@ -116,8 +116,8 @@ namespace ProjectEpochLauncherAvalonia
                 return;
             }
 
-            // If we're currently downloading (step 2), warn about active download
-            if (_currentStep == 2 && _cancellationTokenSource != null && !_cancellationTokenSource.Token.IsCancellationRequested)
+            // If we're currently downloading, warn about active download
+            if (_currentStep == (int)SetupStep.DownloadStep && _cancellationTokenSource != null && !_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 // Cancel the close and show download-specific confirmation
                 e.Cancel = true;
@@ -126,7 +126,7 @@ namespace ProjectEpochLauncherAvalonia
             }
 
             // For other steps, show normal exit confirmation
-            if (!_configManager.SetupCompleted && _currentStep < 3)
+            if (!_configManager.SetupCompleted && _currentStep < (int)SetupStep.CompleteStep)
             {
                 // Cancel the close and show confirmation
                 e.Cancel = true;
@@ -327,22 +327,30 @@ namespace ProjectEpochLauncherAvalonia
             }
         }
 
+        public enum SetupStep
+        {
+            WelcomeStep = 0,
+            InstallPathStep = 1,
+            DownloadStep = 2,
+            CompleteStep = 3
+        }
+
         private void ShowCurrentStep()
         {
             if (_wizardContent == null) return;
 
             switch (_currentStep)
             {
-                case 0:
+                case (int)SetupStep.WelcomeStep:
                     ShowWelcomeStep();
                     break;
-                case 1:
+                case (int)SetupStep.InstallPathStep:
                     ShowInstallPathStep();
                     break;
-                case 2:
+                case (int)SetupStep.DownloadStep:
                     ShowDownloadStep();
                     break;
-                case 3:
+                case (int)SetupStep.CompleteStep:
                     ShowCompleteStep();
                     break;
             }
