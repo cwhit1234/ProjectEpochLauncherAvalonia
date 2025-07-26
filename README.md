@@ -115,7 +115,7 @@ When you run the launcher for the first time, you'll be guided through a setup w
 - Ensure you have write permissions to the installation directory
 
 ### Getting Help
-- **Issues**: Report bugs on our [GitHub Issues page](https://github.com/Project-Epoch/ProjectEpochLauncherAvalonia/issues)
+- **Issues**: Report bugs on our [GitHub Issues page](https://github.com/cwhit1234/ProjectEpochLauncherAvalonia/issues)
 
 ## Configuration Files
 
