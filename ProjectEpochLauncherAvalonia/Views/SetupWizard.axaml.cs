@@ -735,18 +735,18 @@ namespace ProjectEpochLauncherAvalonia
 
             switch (_currentStep)
             {
-                case 0: // Welcome
+                case (int)SetupStep.WelcomeStep:
                     _nextButton.Content = Constants.GET_STARTED_BUTTON_TEXT;
                     _nextButton.IsEnabled = true;
                     break;
-                case 1: // Install Path
+                case (int)SetupStep.InstallPathStep: 
                     _nextButton.Content = Constants.INSTALL_BUTTON_TEXT;
                     _nextButton.IsEnabled = !string.IsNullOrEmpty(_selectedInstallPath);
                     break;
-                case 2: // Download
+                case (int)SetupStep.DownloadStep:
                     _nextButton.IsVisible = false;
                     break;
-                case 3: // Complete
+                case (int)SetupStep.CompleteStep:
                     _nextButton.Content = Constants.FINISH_BUTTON_TEXT;
                     _nextButton.IsEnabled = true;
                     break;
@@ -764,7 +764,7 @@ namespace ProjectEpochLauncherAvalonia
 
         private void OnNextClick(object? sender, RoutedEventArgs e)
         {
-            if (_currentStep == 3) // Complete step
+            if (_currentStep == (int)SetupStep.CompleteStep)
             {
                 LogDebug("Setup wizard finished - closing window");
                 _forceClose = true; // Allow close without confirmation
@@ -772,7 +772,7 @@ namespace ProjectEpochLauncherAvalonia
                 return;
             }
 
-            if (_currentStep < 3)
+            if (_currentStep < (int)SetupStep.CompleteStep)
             {
                 _currentStep++;
                 ShowCurrentStep();

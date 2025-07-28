@@ -157,7 +157,7 @@ namespace ProjectEpochLauncherAvalonia
                 FontWeight = Avalonia.Media.FontWeight.Bold,
                 Foreground = Avalonia.Media.Brush.Parse(Constants.COLOR_PRIMARY_GOLD),
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top
             };
 
             homeContent.Children.Add(welcomeText);
@@ -237,17 +237,17 @@ namespace ProjectEpochLauncherAvalonia
             {
                 var statusTextBlock = new TextBlock
                 {
-                    Name = "StatusMessage",
+                    Name = Constants.STATUS_MESSAGE_TEXT_BLOCK,
                     Text = statusMessage,
                     FontSize = 14,
                     Foreground = isErrorMessage ?
                         Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED) :
                         Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     TextAlignment = Avalonia.Media.TextAlignment.Center,
                     TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    Margin = new Avalonia.Thickness(20, 0, 20, 100), // Space above buttons
+                    Margin = new Avalonia.Thickness(20, 0, 20, 0), // Space above buttons
                     MaxWidth = 600,
                     Opacity = 1.0
                 };
@@ -871,17 +871,17 @@ namespace ProjectEpochLauncherAvalonia
                 // Create new status message
                 var statusMessage = new TextBlock
                 {
-                    Name = "StatusMessage",
+                    Name = Constants.STATUS_MESSAGE_TEXT_BLOCK,
                     Text = message,
                     FontSize = 14,
                     Foreground = isError ?
                         Avalonia.Media.Brush.Parse(Constants.COLOR_ERROR_RED) :
                         Avalonia.Media.Brush.Parse(Constants.COLOR_SUCCESS_GREEN),
                     HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
                     TextAlignment = Avalonia.Media.TextAlignment.Center,
                     TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-                    Margin = new Avalonia.Thickness(20, 0, 20, 100), // Space above buttons
+                    Margin = new Avalonia.Thickness(20, 0, 20, 0), // Space above buttons
                     MaxWidth = 600,
                     Opacity = 1.0 // Show immediately without animation
                 };
@@ -905,7 +905,7 @@ namespace ProjectEpochLauncherAvalonia
                 if (homeContent == null) return;
 
                 var statusMessage = homeContent.Children.OfType<TextBlock>()
-                    .FirstOrDefault(tb => tb.Name == "StatusMessage");
+                    .FirstOrDefault(tb => tb.Name == Constants.STATUS_MESSAGE_TEXT_BLOCK);
 
                 if (statusMessage != null)
                 {

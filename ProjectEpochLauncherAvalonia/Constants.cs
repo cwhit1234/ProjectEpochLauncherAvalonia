@@ -59,5 +59,8 @@
         public const string COLOR_WARNING_ORANGE = "#FF9800";
         public const string COLOR_SECONDARY_GRAY = "#666666";
         public const string COLOR_CANCEL_RED = "#F44336";
+
+        //Text Block Constants
+        public const string STATUS_MESSAGE_TEXT_BLOCK = "StatusMessage";
     }
 }
