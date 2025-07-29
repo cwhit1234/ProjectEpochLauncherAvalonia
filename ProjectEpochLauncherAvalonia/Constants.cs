@@ -1,4 +1,6 @@
-﻿namespace ProjectEpochLauncherAvalonia
+﻿using System.IO;
+
+namespace ProjectEpochLauncherAvalonia
 {
     public static class Constants
     {
@@ -62,5 +64,35 @@
 
         //Text Block Constants
         public const string STATUS_MESSAGE_TEXT_BLOCK = "StatusMessage";
+
+        // Required WoW 3.3.5a Client Files
+        public static readonly string[] REQUIRED_WOW_CLIENT_FILES = {
+            "WoW.exe",
+            "launcher.exe",
+            "dbghelp.dll",
+            "unicows.dll",
+            Path.Combine("Data", "common.MPQ"),
+            Path.Combine("Data", "common-2.MPQ"),
+            Path.Combine("Data", "expansion.MPQ"),
+            Path.Combine("Data", "lichking.MPQ"),
+            Path.Combine("Data", "patch.MPQ"),
+            Path.Combine("Data", "patch-2.MPQ"),
+            Path.Combine("Data", "patch-3.MPQ"),
+            Path.Combine("Data", "enUS", "locale-enUS.MPQ"),
+            Path.Combine("Data", "enUS", "patch-enUS.MPQ"),
+            Path.Combine("Data", "enUS", "speech-enUS.MPQ"),
+        };
+
+        // Required Project Epoch Files
+        public static readonly string[] REQUIRED_PROJECT_EPOCH_FILES = {
+            "Project-Epoch.exe",
+            "ClientExtensions.dll",
+            "credits.txt",
+            Path.Combine("Data", "patch-A.MPQ"),
+            Path.Combine("Data", "patch-B.MPQ"),
+            Path.Combine("Data", "patch-Y.MPQ"),
+            Path.Combine("Data", "patch-Z.MPQ"),
+            Path.Combine("Data", "enUS", "realmlist.wtf")
+        };
     }
 }

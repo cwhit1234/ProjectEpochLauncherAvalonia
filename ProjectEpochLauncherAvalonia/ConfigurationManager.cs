@@ -43,16 +43,6 @@ namespace ProjectEpochLauncherAvalonia
             }
         }
 
-        public DateTime LastUpdateCheck
-        {
-            get => _configuration.LastUpdateCheck;
-            set
-            {
-                _configuration.LastUpdateCheck = value;
-                SaveConfiguration();
-            }
-        }
-
         private string GetConfigDirectory()
         {
             // Cross-platform config directory resolution
@@ -91,7 +81,7 @@ namespace ProjectEpochLauncherAvalonia
             }
         }
 
-        private string GetDefaultInstallPath()
+        public string GetDefaultInstallPath()
         {
             // Cross-platform default install path
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -171,8 +161,7 @@ namespace ProjectEpochLauncherAvalonia
             var config = new LauncherConfiguration
             {
                 InstallPath = GetDefaultInstallPath(),
-                SetupCompleted = false,
-                LastUpdateCheck = DateTime.MinValue
+                SetupCompleted = false
             };
 
             SaveConfiguration();
@@ -204,6 +193,5 @@ namespace ProjectEpochLauncherAvalonia
     {
         public string InstallPath { get; set; } = string.Empty;
         public bool SetupCompleted { get; set; } = false;
-        public DateTime LastUpdateCheck { get; set; } = DateTime.MinValue;
     }
 }

@@ -1,0 +1,149 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:ProjectEpochLauncherAvalonia.ViewModels"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="500"
+        x:Class="ProjectEpochLauncherAvalonia.Views.SetupWizardView"
+        x:DataType="vm:SetupWizardViewModel"
+        Title="Project Epoch - Setup Wizard"
+        Width="600"
+        Height="500"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        ShowInTaskbar="True"
+		Icon="/Assets/icon.ico">
+
+	<Border Background="#CC16213E"
+            CornerRadius="10"
+            Padding="40">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<!-- Header -->
+			<StackPanel Grid.Row="0"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,30">
+				<TextBlock Text="Welcome to Project Epoch!"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#F0E68C"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+				<TextBlock Text="Let's get you set up to play"
+                           FontSize="16"
+                           Foreground="#B0B0C0"
+                           HorizontalAlignment="Center"/>
+			</StackPanel>
+
+			<!-- Content Area -->
+			<TransitioningContentControl Grid.Row="1"
+										 Content="{Binding CurrentStep, Converter={StaticResource SetupStepToContentConverter}}">
+				<TransitioningContentControl.PageTransition>
+					<CrossFade Duration="0:00:00.3"/>
+				</TransitioningContentControl.PageTransition>
+			</TransitioningContentControl>
+
+			<!-- Status Message -->
+			<Border Grid.Row="2"
+					Background="#22FFFFFF"
+					CornerRadius="6"
+					Padding="15"
+					Margin="0,20,0,10"
+					IsVisible="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}">
+				<TextBlock Text="{Binding StatusMessage}"
+						   FontSize="14"
+						   Foreground="#E0E0E0"
+						   TextWrapping="Wrap"
+						   TextAlignment="Center"
+						   HorizontalAlignment="Center"/>
+			</Border>
+
+			<!-- Navigation Buttons -->
+			<Grid Grid.Row="3" Margin="0,10,0,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<!-- Cancel Button -->
+				<Button Grid.Column="0"
+						Content="Cancel"
+						Command="{Binding CancelCommand}"
+						Width="100"
+						Height="40"
+						HorizontalAlignment="Left"
+						Background="#666666"
+						Foreground="White"
+						CornerRadius="6"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#777777"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+
+				<!-- Back Button -->
+				<Button Grid.Column="1"
+						Content="Back"
+						Command="{Binding BackCommand}"
+						IsVisible="{Binding CanGoBack}"
+						Width="100"
+						Height="40"
+						Margin="0,0,15,0"
+						Background="#666666"
+						Foreground="White"
+						CornerRadius="6"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#777777"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+
+				<!-- Next/Finish Button -->
+				<Button Grid.Column="2"
+						Content="{Binding NextButtonText}"
+						Command="{Binding NextCommand}"
+						IsVisible="{Binding !IsDownloading}"
+						Width="100"
+						Height="40"
+						Background="#1E88E5"
+						Foreground="White"
+						CornerRadius="6"
+						HorizontalContentAlignment="Center"
+						VerticalContentAlignment="Center"
+						Cursor="Hand">
+					<Button.Styles>
+						<Style Selector="Button:pointerover">
+							<Setter Property="Background" Value="#1976D2"/>
+						</Style>
+						<Style Selector="Button:disabled">
+							<Setter Property="Background" Value="#555555"/>
+							<Setter Property="Cursor" Value="Arrow"/>
+						</Style>
+					</Button.Styles>
+				</Button>
+			</Grid>
+		</Grid>
+	</Border>
+
+	<!-- Step Content Templates -->
+	<Window.Resources>
+		<!-- We'll define step content templates here -->
+	</Window.Resources>
+
+</Window>

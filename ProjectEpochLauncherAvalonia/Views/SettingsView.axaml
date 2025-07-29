@@ -1,0 +1,151 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ProjectEpochLauncherAvalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ProjectEpochLauncherAvalonia.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+	<ScrollViewer>
+		<StackPanel Spacing="25" Margin="20">
+
+			<!-- Settings Header -->
+			<TextBlock Text="Settings"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#F0E68C"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,10"/>
+
+			<!-- Installation Settings -->
+			<Border Background="#33FFFFFF"
+                    CornerRadius="8"
+                    Padding="20">
+				<StackPanel Spacing="15">
+
+					<TextBlock Text="Installation Settings"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#F0E68C"/>
+
+					<!-- Install Path -->
+					<StackPanel Spacing="8">
+						<TextBlock Text="Installation Path:"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"/>
+
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+
+							<TextBox Grid.Column="0"
+                                     Text="{Binding InstallPath}"
+                                     IsReadOnly="True"
+                                     Background="#22FFFFFF"
+                                     BorderBrush="#555555"
+                                     Foreground="#E0E0E0"
+                                     Padding="10,8"
+                                     CornerRadius="4"
+                                     VerticalAlignment="Center"/>
+
+							<Button Grid.Column="1"
+                                    Content="Browse..."
+                                    Command="{Binding BrowseInstallPathCommand}"
+                                    IsEnabled="{Binding IsBrowseButtonEnabled}"
+                                    Width="100"
+                                    Height="35"
+                                    Margin="10,0,0,0"
+                                    Background="#4CAF50"
+                                    Foreground="White"
+                                    CornerRadius="4"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    Cursor="Hand">
+								<Button.Styles>
+									<Style Selector="Button:pointerover">
+										<Setter Property="Background" Value="#45A049"/>
+									</Style>
+									<Style Selector="Button:disabled">
+										<Setter Property="Background" Value="#666666"/>
+										<Setter Property="Cursor" Value="Arrow"/>
+									</Style>
+								</Button.Styles>
+							</Button>
+						</Grid>
+					</StackPanel>
+
+				</StackPanel>
+			</Border>
+
+			<!-- System Information -->
+			<Border Background="#33FFFFFF"
+                    CornerRadius="8"
+                    Padding="20">
+				<StackPanel Spacing="15">
+
+					<TextBlock Text="System Information"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#F0E68C"/>
+
+					<!-- Platform -->
+					<StackPanel Spacing="5">
+						<TextBlock Text="Platform:"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"/>
+						<TextBlock Text="{Binding PlatformName}"
+                                   FontSize="12"
+                                   Foreground="#B0B0C0"/>
+					</StackPanel>
+
+					<!-- Game Launching Support -->
+					<StackPanel Spacing="5">
+						<TextBlock Text="Game Launching:"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"/>
+						<StackPanel Orientation="Horizontal" Spacing="8">
+							<Ellipse Width="8"
+                                     Height="8"
+                                     VerticalAlignment="Center"
+                                     Fill="{Binding SupportsGameLaunching, Converter={StaticResource BoolToColorConverter}}"/>
+							<TextBlock Text="{Binding SupportStatusText}"
+                                       FontSize="12"
+                                       Foreground="#B0B0C0"
+                                       VerticalAlignment="Center"/>
+						</StackPanel>
+					</StackPanel>
+
+					<!-- Platform Limitations -->
+					<StackPanel Spacing="5" IsVisible="{Binding !SupportsGameLaunching}">
+						<TextBlock Text="Platform Limitations:"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"/>
+						<TextBlock Text="{Binding PlatformLimitations}"
+                                   FontSize="12"
+                                   Foreground="#FF9800"
+                                   TextWrapping="Wrap"/>
+					</StackPanel>
+
+				</StackPanel>
+			</Border>
+
+			<!-- Status Message -->
+			<Border Background="#22FFFFFF"
+                    CornerRadius="6"
+                    Padding="15"
+                    IsVisible="{Binding StatusMessage, Converter={StaticResource StringToVisibilityConverter}}">
+				<TextBlock Text="{Binding StatusMessage}"
+                           FontSize="14"
+                           Foreground="#E0E0E0"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"/>
+			</Border>
+
+		</StackPanel>
+	</ScrollViewer>
+
+</UserControl>
