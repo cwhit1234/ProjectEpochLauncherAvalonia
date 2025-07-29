@@ -2,7 +2,8 @@
 
 A cross-platform launcher for Project Epoch, a World of Warcraft private server that brings back the classic experience with modern improvements.
 
-![ProjectEpochAvaloniaLauncherHome](https://github.com/user-attachments/assets/d889017e-3082-41b5-a97c-8ef025edc5bb)
+## Pre-Cursor
+**This is NOT developed by the official Project Epoch developers. This is a custom developed launcher by a member of the community.
 
 ## Features
 
