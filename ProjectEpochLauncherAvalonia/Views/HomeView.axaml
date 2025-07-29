@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:ProjectEpochLauncherAvalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ProjectEpochLauncherAvalonia.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- Welcome Message -->
+		<TextBlock Grid.Row="0"
+                   Text="{Binding WelcomeMessage}"
+                   FontSize="32"
+                   FontWeight="Bold"
+                   Foreground="#F0E68C"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+		<!-- Status Information -->
+		<Border Grid.Row="2"
+                Background="#33FFFFFF"
+                CornerRadius="8"
+                Padding="20"
+                MaxWidth="500"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center">
+			<StackPanel Spacing="15">
+
+				<!-- Installation Status -->
+				<StackPanel Spacing="5">
+					<TextBlock Text="Installation Status:"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#F0E68C"/>
+
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<Ellipse Width="10"
+                                 Height="10"
+                                 VerticalAlignment="Center"
+                                 Fill="{Binding IsGameInstalled, Converter={StaticResource BoolToColorConverter}}"/>
+						<TextBlock Text="{Binding InstallStatusText}"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"
+                                   VerticalAlignment="Center"/>
+					</StackPanel>
+				</StackPanel>
+
+				<!-- Server Status -->
+				<StackPanel Spacing="5">
+					<TextBlock Text="Server Status:"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#F0E68C"/>
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<Ellipse Width="10"
+                                 Height="10"
+                                 Fill="#4CAF50"
+                                 VerticalAlignment="Center"/>
+						<TextBlock Text="{Binding ServerStatus}"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"
+                                   VerticalAlignment="Center"/>
+					</StackPanel>
+				</StackPanel>
+
+			</StackPanel>
+		</Border>
+	</Grid>
+
+	<UserControl.Resources>
+		<!-- Converters for status display -->
+		<x:String x:Key="InstalledStatus">Installed and Ready</x:String>
+		<x:String x:Key="NotInstalledStatus">Not Installed</x:String>
+
+		<!-- Value Converters would need to be implemented in code-behind or as resources -->
+	</UserControl.Resources>
+
+</UserControl>
