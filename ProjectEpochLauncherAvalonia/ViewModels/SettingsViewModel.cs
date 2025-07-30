@@ -34,8 +34,6 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
 
         public ICommand BrowseInstallPathCommand { get; set; }
 
-        public event EventHandler? InstallPathChanged;
-
         public SettingsViewModel(ConfigurationManager configurationManager)
         {
             _configurationManager = configurationManager ?? throw new ArgumentNullException(nameof(configurationManager));
