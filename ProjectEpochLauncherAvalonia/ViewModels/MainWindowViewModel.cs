@@ -348,23 +348,7 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    // Fallback for different platforms
-                    if (PlatformSupport.IsWindows)
-                    {
-                        Process.Start(new ProcessStartInfo("cmd", $"/c start {url}") { CreateNoWindow = true });
-                    }
-                    else if (PlatformSupport.IsMacOS)
-                    {
-                        Process.Start("open", url);
-                    }
-                    else if (PlatformSupport.IsLinux)
-                    {
-                        Process.Start("xdg-open", url);
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    LogError($"Error opening URL '{url}': {ex.Message}");
                 }
             });
         }
