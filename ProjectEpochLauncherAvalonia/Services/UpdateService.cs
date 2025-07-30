@@ -13,6 +13,8 @@ namespace ProjectEpochLauncherAvalonia.Services
 {
     public class UpdateService
     {
+        private const string MANIFEST_URL = "https://updater.project-epoch.net/api/v2/manifest";
+
         private static readonly Lazy<HttpClient> _lazyHttpClient = new Lazy<HttpClient>(() =>
         {
             var client = new HttpClient();
@@ -121,13 +123,13 @@ namespace ProjectEpochLauncherAvalonia.Services
         {
             try
             {
-                LogDebug($"Fetching manifest from: {Constants.MANIFEST_URL}");
+                LogDebug($"Fetching manifest from: {MANIFEST_URL}");
 
                 // Create a timeout token for just the manifest request (30 seconds)
                 using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
                 using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-                var response = await HttpClient.GetAsync(Constants.MANIFEST_URL, combinedCts.Token);
+                var response = await HttpClient.GetAsync(MANIFEST_URL, combinedCts.Token);
                 response.EnsureSuccessStatusCode();
 
                 var jsonContent = await response.Content.ReadAsStringAsync(combinedCts.Token);

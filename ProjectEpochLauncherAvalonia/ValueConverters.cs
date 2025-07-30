@@ -24,6 +24,38 @@ namespace ProjectEpochLauncherAvalonia.Converters
         }
     }
 
+    public class ServerStatusToColorConverter : IValueConverter
+    {
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (value is string statusText)
+            {
+                if (statusText.Contains("Online"))
+                {
+                    return Colors.Green;
+                }
+                else if (statusText.Contains("Offline"))
+                {
+                    return Colors.Red;
+                }
+                else if (statusText.Contains("Checking") || statusText.Contains("..."))
+                {
+                    return Colors.Orange;
+                }
+                else if (statusText.Contains("Error"))
+                {
+                    return Colors.Red;
+                }
+            }
+            return Colors.Gray;
+        }
+
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class BoolToInstallStatusConverter : IValueConverter
     {
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -221,7 +253,7 @@ namespace ProjectEpochLauncherAvalonia.Converters
 
             var browseButton = new Button
             {
-                Content = "Browse...",
+                Content = Constants.BROWSE_BUTTON_TEXT,
                 Width = 100,
                 Height = 35,
                 Margin = new Avalonia.Thickness(10, 0, 0, 0),

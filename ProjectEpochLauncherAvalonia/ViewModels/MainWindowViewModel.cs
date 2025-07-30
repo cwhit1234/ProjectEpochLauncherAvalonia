@@ -12,9 +12,13 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
 {
     public partial class MainWindowViewModel : ViewModelBase
     {
+        private const string DONATE_URL = "https://github.com/sponsors/Project-Epoch";
+        private const string DISCORD_URL = "https://www.project-epoch.net/community/discord";
+
         private readonly ConfigurationManager _configurationManager;
         private readonly UpdateService _updateService;
         private readonly InstallationValidationService _validationService;
+        private readonly ServerStatusService _serverStatusService;
         private CancellationTokenSource? _cancellationTokenSource;
 
         [ObservableProperty]
@@ -59,6 +63,7 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
             _configurationManager = configurationManager ?? new ConfigurationManager();
             _updateService = new UpdateService(_configurationManager);
             _validationService = new InstallationValidationService();
+            _serverStatusService = new ServerStatusService();
 
             // Initialize commands
             _playCommand = new AsyncRelayCommand(ExecutePlayCommandAsync, CanExecutePlayCommand);
@@ -290,7 +295,8 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
 
             return new HomeViewModel(
                 isInstalled,
-                _configurationManager.InstallPath);
+                _configurationManager.InstallPath,
+                _serverStatusService);
         }
 
         private object CreateSettingsContent()
@@ -303,7 +309,7 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
         {
             try
             {
-                await OpenUrlAsync(Constants.DISCORD_URL);
+                await OpenUrlAsync(DISCORD_URL);
                 StatusMessage = "Opening Discord community...";
             }
             catch (Exception ex)
@@ -317,7 +323,7 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
         {
             try
             {
-                await OpenUrlAsync(Constants.DONATE_URL);
+                await OpenUrlAsync(DONATE_URL);
                 StatusMessage = "Opening donation page...";
             }
             catch (Exception ex)
@@ -369,6 +375,7 @@ namespace ProjectEpochLauncherAvalonia.ViewModels
             {
                 _cancellationTokenSource?.Cancel();
                 _cancellationTokenSource?.Dispose();
+                _serverStatusService?.Dispose();
             }
             base.Dispose(disposing);
         }
