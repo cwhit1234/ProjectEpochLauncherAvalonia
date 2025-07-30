@@ -32,7 +32,7 @@
                 MaxWidth="500"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center">
-			<StackPanel Spacing="15">
+			<StackPanel Spacing="20">
 
 				<!-- Installation Status -->
 				<StackPanel Spacing="5">
@@ -53,18 +53,38 @@
 					</StackPanel>
 				</StackPanel>
 
-				<!-- Server Status -->
-				<StackPanel Spacing="5">
+				<!-- Server Status Section -->
+				<StackPanel Spacing="10">
 					<TextBlock Text="Server Status:"
                                FontSize="14"
                                FontWeight="SemiBold"
                                Foreground="#F0E68C"/>
+
+					<!-- Login Server Status -->
 					<StackPanel Orientation="Horizontal" Spacing="10">
 						<Ellipse Width="10"
                                  Height="10"
-                                 Fill="#4CAF50"
-                                 VerticalAlignment="Center"/>
-						<TextBlock Text="{Binding ServerStatus}"
+                                 VerticalAlignment="Center">
+							<Ellipse.Fill>
+								<SolidColorBrush Color="{Binding LoginServerStatus, Converter={StaticResource ServerStatusToColorConverter}}"/>
+							</Ellipse.Fill>
+						</Ellipse>
+						<TextBlock Text="{Binding LoginServerStatus}"
+                                   FontSize="14"
+                                   Foreground="#E0E0E0"
+                                   VerticalAlignment="Center"/>
+					</StackPanel>
+
+					<!-- World Server Status -->
+					<StackPanel Orientation="Horizontal" Spacing="10">
+						<Ellipse Width="10"
+                                 Height="10"
+                                 VerticalAlignment="Center">
+							<Ellipse.Fill>
+								<SolidColorBrush Color="{Binding WorldServerStatus, Converter={StaticResource ServerStatusToColorConverter}}"/>
+							</Ellipse.Fill>
+						</Ellipse>
+						<TextBlock Text="{Binding WorldServerStatus}"
                                    FontSize="14"
                                    Foreground="#E0E0E0"
                                    VerticalAlignment="Center"/>

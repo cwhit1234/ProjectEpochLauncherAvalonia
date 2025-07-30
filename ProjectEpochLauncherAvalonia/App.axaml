@@ -23,5 +23,6 @@
 		<converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
 		<converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
 		<converters:SetupStepToContentConverter x:Key="SetupStepToContentConverter"/>
+		<converters:ServerStatusToColorConverter x:Key="ServerStatusToColorConverter"/>
 	</Application.Resources>
 </Application>
